@@ -2,6 +2,9 @@
 # exit on error
 set -o errexit
 
+echo "Build started..."
+
+
 pip install -r backend/requirements.txt
 
 python backend/manage.py collectstatic --no-input
