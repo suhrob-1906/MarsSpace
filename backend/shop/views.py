@@ -10,6 +10,13 @@ class ShopItemViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShopItemSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
+class AdminShopItemViewSet(viewsets.ModelViewSet):
+    """ViewSet for admins to manage shop items"""
+    permission_classes = [permissions.IsAdminUser]
+    serializer_class = ShopItemSerializer
+    queryset = ShopItem.objects.all()
+
 class BuyItemView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 

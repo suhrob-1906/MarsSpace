@@ -1,10 +1,23 @@
-django<6
-djangorestframework
-djangorestframework-simplejwt
-django-cors-headers
-psycopg2-binary
-gunicorn
-whitenoise
-pillow
-django-environ
-dj-database-url
+# Core Django
+django==5.2.10
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+
+# Database
+psycopg2-binary==2.9.10
+dj-database-url==2.1.0
+
+# Security & CORS
+django-cors-headers==4.6.0
+
+# File handling
+pillow==11.0.0
+
+# Environment & Configuration
+django-environ==0.11.2
+
+# Production server
+gunicorn==23.0.0
+
+# Static files
+whitenoise==6.8.2

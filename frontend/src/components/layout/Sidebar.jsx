@@ -10,9 +10,9 @@ const Sidebar = () => {
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'My Courses', path: '/courses', icon: BookOpen },
+        { name: 'Typing Game', path: '/typing', icon: Code2 },
         { name: 'Eduverse', path: '/eduverse', icon: Globe },
         { name: 'Space Shop', path: '/shop', icon: ShoppingBag },
-        // { name: 'Blog', path: '/blog', icon: Code2 },
     ];
 
     if (user?.role === 'TEACHER') {

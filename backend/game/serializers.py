@@ -7,10 +7,12 @@ class SeasonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TypingAttemptSerializer(serializers.ModelSerializer):
+    coins_reward = serializers.IntegerField(read_only=True, default=0)
+    
     class Meta:
         model = TypingAttempt
-        fields = ['id', 'wpm', 'accuracy', 'score', 'energy_gain', 'created_at']
-        read_only_fields = ['score', 'energy_gain', 'created_at']
+        fields = ['id', 'wpm', 'accuracy', 'score', 'energy_gain', 'coins_reward', 'created_at']
+        read_only_fields = ['score', 'energy_gain', 'coins_reward', 'created_at']
 
 class LeaderboardEntrySerializer(serializers.Serializer):
     username = serializers.CharField()

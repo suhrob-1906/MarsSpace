@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
+from .validators import validate_zip_file
 
 def validate_file_size(value):
     filesize = value.size
@@ -65,12 +66,16 @@ class HomeworkSubmission(models.Model):
     file = models.FileField(
         upload_to='homework_uploads/',
         validators=[
-            FileExtensionValidator(allowed_extensions=['pdf', 'zip', 'rar', 'doc', 'docx', 'py', 'js', 'html', 'css', 'txt']),
-            validate_file_size
+            FileExtensionValidator(allowed_extensions=['zip']),  # Only ZIP files as per requirements
+            validate_file_size,
+            validate_zip_file  # Additional validation to ensure it's a valid ZIP
         ]
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SUBMITTED)
     teacher_comment = models.TextField(blank=True)
+    coins_reward = models.PositiveIntegerField(default=0, help_text="Coins awarded when accepted")
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reviewed_submissions', null=True, blank=True, on_delete=models.SET_NULL)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

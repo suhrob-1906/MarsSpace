@@ -88,19 +88,21 @@ const Dashboard = () => {
                 </div>
 
                 {/* Typing Game Widget */}
-                <div className="bg-surface rounded-3xl p-6 border border-slate-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div className="bg-gradient-to-br from-purple-900/30 to-slate-900 rounded-3xl p-6 border border-purple-500/20 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-purple-500/40 transition-colors">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />
-                    <h3 className="text-lg font-bold text-white mb-1">Typing Speed</h3>
-                    <p className="text-slate-400 text-sm mb-6">Compete for the leaderboard!</p>
+                    <div className="relative z-10 w-full">
+                        <h3 className="text-lg font-bold text-white mb-1">Typing Speed</h3>
+                        <p className="text-slate-400 text-sm mb-6">Compete for the leaderboard!</p>
 
-                    <div className="mb-6">
-                        <div className="text-4xl font-black text-primary mb-1">{stats.wpm}</div>
-                        <div className="text-xs uppercase tracking-wider text-slate-500 font-bold">WPM (Best)</div>
+                        <div className="mb-6">
+                            <div className="text-4xl font-black text-primary mb-1">{stats.wpm}</div>
+                            <div className="text-xs uppercase tracking-wider text-slate-500 font-bold">WPM (Best)</div>
+                        </div>
+
+                        <Link to="/typing" className="w-full btn btn-primary group-hover:scale-105 transition-transform">
+                            Play Typing
+                        </Link>
                     </div>
-
-                    <Link to="/typing" className="w-full btn btn-primary">
-                        Play Typing
-                    </Link>
                 </div>
             </div>
 
