@@ -23,7 +23,7 @@ const Login = () => {
             console.error(err);
             // Show user-friendly error message
             if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
-                setError('Не удалось подключиться к серверу. Убедитесь, что backend запущен на http://127.0.0.1:8000');
+                setError('Не удалось подключиться к серверу. Убедитесь, что backend запущен.');
             } else if (err.response?.status === 401) {
                 setError('Неверное имя пользователя или пароль');
             } else if (err.userMessage) {

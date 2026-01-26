@@ -1,3 +1,29 @@
 
 # Environment variables
 backend/.env
+
+# Django-specific ignores
+backend/db.sqlite3
+backend/media/*
+!backend/media/.gitkeep
+backend/staticfiles
+
+# Python-specific ignores
+__pycache__/
+*.pyc
+*.o
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.manifest
+.env
+.project

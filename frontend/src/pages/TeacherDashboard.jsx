@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Folder, Download, CheckCircle, XCircle } from 'lucide-react';
 
 const TeacherDashboard = () => {

@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             // Re-throw with user-friendly message
             if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-                error.userMessage = 'Не удалось подключиться к серверу. Убедитесь, что backend запущен на http://127.0.0.1:8000';
+                error.userMessage = 'Не удалось подключиться к серверу. Убедитесь, что backend запущен.';
             } else if (error.response?.status === 401) {
                 error.userMessage = 'Неверное имя пользователя или пароль';
             }
@@ -71,4 +71,5 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

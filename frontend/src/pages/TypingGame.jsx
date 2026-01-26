@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { Timer, RefreshCw, Trophy, Coins, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -14,35 +14,37 @@ const TEXT_SAMPLES = [
 ];
 
 const TypingGame = () => {
-    const { user, refreshUser } = useAuth();
+    const { refreshUser } = useAuth();
     const [text, setText] = useState("");
     const [input, setInput] = useState("");
-    const [startTime, setStartTime] = useState(null);
+    const startTimeRef = useRef(null);
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [coinsEarned, setCoinsEarned] = useState(0);
     const [energyEarned, setEnergyEarned] = useState(0);
     const [errors, setErrors] = useState(0);
-    const [totalChars, setTotalChars] = useState(0);
 
-    useEffect(() => {
-        resetGame();
-    }, []);
+    const [gameStarted, setGameStarted] = useState(false);
 
     const resetGame = () => {
         const randomText = TEXT_SAMPLES[Math.floor(Math.random() * TEXT_SAMPLES.length)];
         setText(randomText);
         setInput("");
-        setStartTime(null);
+        startTimeRef.current = null;
         setWpm(0);
         setAccuracy(0);
         setCompleted(false);
         setCoinsEarned(0);
         setEnergyEarned(0);
         setErrors(0);
-        setTotalChars(0);
+        setGameStarted(false);
     };
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        resetGame();
+    }, []);
 
     const calculateAccuracy = (original, typed) => {
         let correct = 0;
@@ -55,12 +57,17 @@ const TypingGame = () => {
         return total > 0 ? Math.round((correct / total) * 100) : 0;
     };
 
+    useEffect(() => {
+        if (input.length === 1 && !startTimeRef.current) {
+            startTimeRef.current = performance.now();
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setGameStarted(true);
+        }
+    }, [input]);
+
     const handleChange = (e) => {
         const val = e.target.value;
-        if (!startTime) setStartTime(Date.now());
-
         setInput(val);
-        setTotalChars(val.length);
 
         // Calculate errors
         let errorCount = 0;
@@ -81,8 +88,8 @@ const TypingGame = () => {
     };
 
     const handleComplete = async () => {
-        const endTime = Date.now();
-        const minutes = (endTime - startTime) / 60000;
+        const endTime = performance.now();
+        const minutes = (endTime - startTimeRef.current) / 60000;
         const words = text.split(/\s+/).filter(w => w.length > 0).length;
         const calculatedWpm = minutes > 0 ? Math.round(words / minutes) : 0;
         const finalAccuracy = calculateAccuracy(text, input);
@@ -139,7 +146,7 @@ const TypingGame = () => {
             </div>
 
             {/* Stats Bar */}
-            {!completed && startTime && (
+            {!completed && gameStarted && (
                 <div className="grid grid-cols-3 gap-4">
                     <div className="card text-center">
                         <div className="text-2xl font-bold text-primary">{wpm || 0}</div>

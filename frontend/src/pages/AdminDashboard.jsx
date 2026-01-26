@@ -61,14 +61,14 @@ const AdminDashboard = () => {
         } else if (activeTab === 'users') {
             fetchUsers();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab]);
 
     const fetchStats = async () => {
         try {
-            const [usersRes, coursesRes, shopRes, homeworkRes] = await Promise.all([
+            const [usersRes, coursesRes, homeworkRes] = await Promise.all([
                 api.get('/users/'),
                 api.get('/admin/courses/'),
-                api.get('/admin/shop/items/'),
                 api.get('/admin/homework/')
             ]);
             setStats({
@@ -346,10 +346,7 @@ const AdminDashboard = () => {
                                 <div className="flex gap-2">
                                     <select
                                         className="input text-sm"
-                                        onChange={(e) => {
-                                            const filtered = homeworkSubmissions.filter(h => 
-                                                e.target.value === 'all' || h.status === e.target.value
-                                            );
+                                        onChange={() => {
                                             // This is just for display, we should refetch
                                         }}
                                     >

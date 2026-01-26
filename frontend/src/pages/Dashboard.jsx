@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const [recentProgress, setRecentProgress] = useState(null);
-    const [stats, setStats] = useState({ wpm: 0 });
+    const [stats] = useState({ wpm: 0 });
 
     useEffect(() => {
         const fetchData = async () => {

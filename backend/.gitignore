@@ -1,0 +1,24 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Migrations
+# Some IDEs ignore migrations by default. You can uncomment this if you wish
+# to ignore all migrations.
+# Note: Migrations are usually committed to version control in Django projects.
+# For new projects, it is recommended to keep them tracked.
+# For larger projects or specific workflows, you might choose to ignore them.
+# backend/migrations/
+
+# Environment variables
+.env
+.venv
+venv/
+env/
+
+# Database
+*.sqlite3
+
+# Static files
+/static/
+/staticfiles/
