@@ -25,8 +25,32 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // Basic token refresh logic could go here, for MVP just logout if 401
-        // if (error.response?.status === 401 && !originalRequest._retry) { ... }
+        // Handle network errors
+        if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+            const errorMessage = 'Не удалось подключиться к серверу. Убедитесь, что backend запущен на http://127.0.0.1:8000';
+            error.userMessage = errorMessage;
+            console.error('Network Error:', errorMessage);
+        }
+        
+        // Handle 401 Unauthorized - logout user
+        if (error.response?.status === 401) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        
+        // Add user-friendly error messages
+        if (error.response?.data) {
+            error.userMessage = error.response.data.detail || 
+                               error.response.data.error || 
+                               error.response.data.message ||
+                               'Произошла ошибка при выполнении запроса';
+        } else if (!error.userMessage) {
+            error.userMessage = 'Произошла неизвестная ошибка';
+        }
+        
         return Promise.reject(error);
     }
 );

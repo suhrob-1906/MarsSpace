@@ -14,6 +14,17 @@ class Command(BaseCommand):
         self.stdout.write('Seeding data...')
 
         # 1. Users
+        # Create super admin (only for you)
+        if not User.objects.filter(username='superadmin').exists():
+            superadmin = User.objects.create_superuser(
+                username='superadmin', 
+                email='superadmin@space.com', 
+                password='SuperAdmin2024!@#', 
+                role='ADMIN'
+            )
+            self.stdout.write(self.style.SUCCESS(f'✅ Created SUPER ADMIN: superadmin / SuperAdmin2024!@#'))
+        
+        # Create regular admin (for testing)
         if not User.objects.filter(username='admin').exists():
             admin = User.objects.create_superuser(username='admin', email='admin@space.com', password='admin123', role='ADMIN')
             self.stdout.write(f'Created admin: {admin}')

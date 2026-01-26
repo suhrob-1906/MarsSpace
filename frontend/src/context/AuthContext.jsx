@@ -31,10 +31,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (username, password) => {
-        const response = await api.post('/auth/login/', { username, password });
-        localStorage.setItem('access_token', response.data.access);
-        localStorage.setItem('refresh_token', response.data.refresh);
-        await checkAuth();
+        try {
+            const response = await api.post('/auth/login/', { username, password });
+            localStorage.setItem('access_token', response.data.access);
+            localStorage.setItem('refresh_token', response.data.refresh);
+            await checkAuth();
+        } catch (error) {
+            // Re-throw with user-friendly message
+            if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+                error.userMessage = 'Не удалось подключиться к серверу. Убедитесь, что backend запущен на http://127.0.0.1:8000';
+            } else if (error.response?.status === 401) {
+                error.userMessage = 'Неверное имя пользователя или пароль';
+            }
+            throw error;
+        }
     };
 
     const logout = () => {
