@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import { Timer, RefreshCw, Trophy, Coins, Zap } from 'lucide-react';
+import { Timer, RefreshCw, Trophy, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const TEXT_SAMPLES = [
@@ -22,7 +22,6 @@ const TypingGame = () => {
     const [accuracy, setAccuracy] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [coinsEarned, setCoinsEarned] = useState(0);
-    const [energyEarned, setEnergyEarned] = useState(0);
     const [errors, setErrors] = useState(0);
 
     const [gameStarted, setGameStarted] = useState(false);
@@ -36,7 +35,7 @@ const TypingGame = () => {
         setAccuracy(0);
         setCompleted(false);
         setCoinsEarned(0);
-        setEnergyEarned(0);
+        setCoinsEarned(0);
         setErrors(0);
         setGameStarted(false);
     };
@@ -105,15 +104,12 @@ const TypingGame = () => {
                 accuracy: finalAccuracy,
                 score: Math.round(calculatedWpm * (finalAccuracy / 100))
             });
-            
+
             // Update coins and energy from response
             if (response.data.coins_reward) {
                 setCoinsEarned(response.data.coins_reward);
             }
-            if (response.data.energy_gain) {
-                setEnergyEarned(response.data.energy_gain);
-            }
-            
+
             // Refresh user data to update wallet
             if (refreshUser) {
                 await refreshUser();
@@ -193,7 +189,7 @@ const TypingGame = () => {
                                 <Trophy size={32} />
                                 <span className="text-2xl font-bold">Great job!</span>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="bg-slate-900/50 rounded-xl p-4">
                                     <div className="text-3xl font-bold text-white mb-1">{wpm}</div>
@@ -205,7 +201,7 @@ const TypingGame = () => {
                                 </div>
                             </div>
 
-                            {(coinsEarned > 0 || energyEarned > 0) && (
+                            {coinsEarned > 0 && (
                                 <div className="bg-slate-900/50 rounded-xl p-4 mb-6">
                                     <div className="text-lg font-bold text-white mb-2">Rewards Earned</div>
                                     <div className="flex items-center justify-center gap-6">
@@ -213,12 +209,6 @@ const TypingGame = () => {
                                             <div className="flex items-center gap-2 text-amber-400">
                                                 <Coins size={20} />
                                                 <span className="font-bold">+{coinsEarned} Coins</span>
-                                            </div>
-                                        )}
-                                        {energyEarned > 0 && (
-                                            <div className="flex items-center gap-2 text-green-400">
-                                                <Zap size={20} />
-                                                <span className="font-bold">+{energyEarned} Energy</span>
                                             </div>
                                         )}
                                     </div>
