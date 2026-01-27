@@ -2,7 +2,6 @@ from rest_framework import viewsets, permissions, views, status
 from rest_framework.response import Response
 from .models import ShopItem, Order, OrderItem
 from .serializers import ShopItemSerializer, OrderSerializer
-from game.models import Wallet
 from django.db import transaction
 
 class ShopItemViewSet(viewsets.ReadOnlyModelViewSet):
@@ -28,20 +27,19 @@ class BuyItemView(views.APIView):
             return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
 
         student = request.user
-        wallet, _ = Wallet.objects.get_or_create(student=student)
-
-        if wallet.coins < item.price_coins:
+        
+        if student.coins < item.price_coins:
             return Response({'error': 'Not enough coins'}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
-            wallet.coins -= item.price_coins
-            wallet.save()
+            student.coins -= item.price_coins
+            student.save()
             
             # Simple single item order for MVP
             order = Order.objects.create(student=student, total_coins=item.price_coins)
             OrderItem.objects.create(order=order, shop_item=item, qty=1, price_coins=item.price_coins)
             
-        return Response({'success': True, 'new_balance': wallet.coins})
+        return Response({'success': True, 'new_balance': student.coins})
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderSerializer

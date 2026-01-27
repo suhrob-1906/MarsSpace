@@ -9,7 +9,6 @@ from .serializers import (
     CourseSerializer, CourseDetailSerializer, LessonSerializer,
     ProgressSerializer, HomeworkSubmissionSerializer, AdminHomeworkSubmissionSerializer
 )
-from game.models import Wallet
 
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Course.objects.filter(is_active=True)
@@ -114,9 +113,9 @@ class AdminHomeworkSubmissionViewSet(viewsets.ModelViewSet):
 
             # Award coins to student
             if coins_reward > 0:
-                wallet, _ = Wallet.objects.get_or_create(student=submission.student)
-                wallet.coins += coins_reward
-                wallet.save()
+                student = submission.student
+                student.coins += coins_reward
+                student.save()
 
         return Response(self.get_serializer(submission).data)
 

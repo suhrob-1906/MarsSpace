@@ -61,7 +61,7 @@ const AdminDashboard = () => {
         } else if (activeTab === 'users') {
             fetchUsers();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab]);
 
     const fetchStats = async () => {
@@ -384,12 +384,11 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`px-3 py-1 rounded text-xs font-bold ${
-                                                        sub.status === 'ACCEPTED' ? 'bg-green-500/20 text-green-400' :
-                                                        sub.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
-                                                        sub.status === 'VIEWED' ? 'bg-blue-500/20 text-blue-400' :
-                                                        'bg-yellow-500/20 text-yellow-400'
-                                                    }`}>
+                                                    <div className={`px-3 py-1 rounded text-xs font-bold ${sub.status === 'ACCEPTED' ? 'bg-green-500/20 text-green-400' :
+                                                            sub.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
+                                                                sub.status === 'VIEWED' ? 'bg-blue-500/20 text-blue-400' :
+                                                                    'bg-yellow-500/20 text-yellow-400'
+                                                        }`}>
                                                         {sub.status}
                                                     </div>
                                                     {sub.coins_reward > 0 && (
@@ -467,7 +466,7 @@ const AdminDashboard = () => {
                                                 <th className="pb-3">Name</th>
                                                 <th className="pb-3">Role</th>
                                                 <th className="pb-3">Balance</th>
-                                                <th className="pb-3">Energy</th>
+                                                <th className="pb-3">Points</th>
                                             </tr>
                                         </thead>
                                         <tbody className="text-slate-300">
@@ -478,19 +477,18 @@ const AdminDashboard = () => {
                                                         {u.first_name || u.last_name ? `${u.first_name} ${u.last_name}`.trim() : '-'}
                                                     </td>
                                                     <td className="py-3">
-                                                        <span className={`px-2 py-1 rounded text-xs ${
-                                                            u.role === 'ADMIN' ? 'bg-red-500/20 text-red-300' :
-                                                            u.role === 'TEACHER' ? 'bg-blue-500/20 text-blue-300' :
-                                                            'bg-green-500/20 text-green-300'
-                                                        }`}>
+                                                        <span className={`px-2 py-1 rounded text-xs ${u.role === 'ADMIN' ? 'bg-red-500/20 text-red-300' :
+                                                                u.role === 'TEACHER' ? 'bg-blue-500/20 text-blue-300' :
+                                                                    'bg-green-500/20 text-green-300'
+                                                            }`}>
                                                             {u.role}
                                                         </span>
                                                     </td>
                                                     <td className="py-3 font-mono text-amber-500">
-                                                        {u.wallet?.coins || 0} 🪙
+                                                        {u.coins || 0} 🪙
                                                     </td>
-                                                    <td className="py-3 font-mono text-green-500">
-                                                        {u.wallet?.energy || 0} ⚡
+                                                    <td className="py-3 font-mono text-indigo-400">
+                                                        {u.points || 0} ⭐
                                                     </td>
                                                 </tr>
                                             ))}
