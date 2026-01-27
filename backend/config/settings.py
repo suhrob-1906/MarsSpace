@@ -33,7 +33,15 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['marsspace-backend.onrender.com', 'localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+# Force Render domain to be allowed regardless of env var
+if 'marsspace-backend.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('marsspace-backend.onrender.com')
+# Add localhost for assurance
+if 'localhost' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('localhost')
+if '127.0.0.1' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('127.0.0.1')
 
 
 # Application definition
@@ -153,9 +161,11 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+# Force add likely frontend URLs
+CORS_ALLOWED_ORIGINS.extend([
     "http://localhost:5173",
-    "https://marsspace-frontend.vercel.app", # Potential frontend URL
+    "https://marsspace-frontend.vercel.app",
     "https://project-mentor-one.vercel.app"
 ])
 
@@ -163,12 +173,15 @@ if '*' in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.remove('*')
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=True) # Default to True to avoid issues if URL unknown
+    CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=True)
 
 # CSRF
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+CSRF_TRUSTED_ORIGINS.extend([
     "http://localhost:5173",
     "https://marsspace-backend.onrender.com", 
+    "https://marsspace-frontend.vercel.app",
+    "https://project-mentor-one.vercel.app",
     "https://*.vercel.app"
 ])
 
