@@ -1,12 +1,28 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 export default function Header() {
-    const { user, logout } = useAuth();
+    const { user, logout, setUser } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
+    const navigate = useNavigate();
 
     if (!user) return null;
+
+    const handleLanguageChange = async (lang) => {
+        try {
+            await api.patch('/api/v1/me/', { language: lang });
+            setUser(prev => ({ ...prev, language: lang }));
+        } catch (error) {
+            console.error('Failed to update language:', error);
+        }
+    };
+
+    const handleAdminDashboard = () => {
+        setShowDropdown(false);
+        navigate('/admin-panel');
+    };
 
     return (
         <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
@@ -82,14 +98,38 @@ export default function Header() {
                                         )}
                                     </div>
 
+                                    {/* Admin Dashboard Link */}
+                                    {user.role === 'ADMIN' && (
+                                        <div className="border-b border-gray-200">
+                                            <button
+                                                onClick={handleAdminDashboard}
+                                                className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 text-indigo-600 font-semibold"
+                                            >
+                                                👨‍💼 Админ панель
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* Language Switcher */}
                                     <div className="px-4 py-2">
                                         <p className="text-xs text-gray-500 mb-1">Язык / Til</p>
                                         <div className="flex space-x-2">
-                                            <button className={`px-3 py-1 text-sm rounded ${user.language === 'ru' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}>
+                                            <button
+                                                onClick={() => handleLanguageChange('ru')}
+                                                className={`px-3 py-1 text-sm rounded transition-colors ${user.language === 'ru'
+                                                        ? 'bg-indigo-600 text-white'
+                                                        : 'bg-gray-200 hover:bg-gray-300'
+                                                    }`}
+                                            >
                                                 🇷🇺 RU
                                             </button>
-                                            <button className={`px-3 py-1 text-sm rounded ${user.language === 'uz' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}>
+                                            <button
+                                                onClick={() => handleLanguageChange('uz')}
+                                                className={`px-3 py-1 text-sm rounded transition-colors ${user.language === 'uz'
+                                                        ? 'bg-indigo-600 text-white'
+                                                        : 'bg-gray-200 hover:bg-gray-300'
+                                                    }`}
+                                            >
                                                 🇺🇿 UZ
                                             </button>
                                         </div>
