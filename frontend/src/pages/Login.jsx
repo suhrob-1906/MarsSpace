@@ -26,6 +26,8 @@ const Login = () => {
                 setError('Не удалось подключиться к серверу. Убедитесь, что backend запущен.');
             } else if (err.response?.status === 401) {
                 setError('Неверное имя пользователя или пароль');
+            } else if (err.response?.status === 400) {
+                setError('Ошибка запроса на сервер. Возможно, проблема с конфигурацией backend.');
             } else if (err.userMessage) {
                 setError(err.userMessage);
             } else {
