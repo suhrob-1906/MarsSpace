@@ -1,157 +1,132 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { Bell, Zap, Flame, Coins as CoinsIcon, Globe } from 'lucide-react';
+import NotificationsModal from './modals/NotificationsModal';
+import SubscriptionModal from './modals/SubscriptionModal';
 
-export default function Header() {
-    const { user, logout, setUser } = useAuth();
-    const [showDropdown, setShowDropdown] = useState(false);
-    const navigate = useNavigate();
+const Header = () => {
+    const { t, i18n } = useTranslation();
+    const { user, refreshUser } = useAuth();
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showSubscription, setShowSubscription] = useState(false);
 
-    if (!user) return null;
-
-    const handleLanguageChange = async (lang) => {
-        try {
-            await api.patch('/api/v1/me/', { language: lang });
-            setUser(prev => ({ ...prev, language: lang }));
-        } catch (error) {
-            console.error('Failed to update language:', error);
-        }
-    };
-
-    const handleAdminDashboard = () => {
-        setShowDropdown(false);
-        navigate('/admin-panel');
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+        localStorage.setItem('language', lng);
     };
 
     return (
-        <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
-            <div className="container mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
-                    {/* Logo and Brand */}
-                    <Link to="/dashboard" className="flex items-center space-x-2">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                            <span className="text-2xl">🚀</span>
-                        </div>
-                        <span className="text-xl font-bold hidden sm:inline">MarsSpace</span>
-                    </Link>
-
-                    {/* Stats Display */}
-                    <div className="flex items-center space-x-4 sm:space-x-6">
-                        {/* Activity Days */}
-                        <div className="flex items-center space-x-2 bg-white/20 px-3 py-1.5 rounded-full">
-                            <span className="text-lg">🔥</span>
-                            <div className="hidden sm:block">
-                                <p className="text-xs opacity-80">Активность</p>
-                                <p className="text-sm font-bold">{user.activity_days || 0} дней</p>
+        <>
+            <header className="bg-surface border-b border-slate-700/50 sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
+                <div className="container mx-auto px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        {/* Logo */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
+                                <Zap className="w-6 h-6 text-white" />
                             </div>
-                            <p className="text-sm font-bold sm:hidden">{user.activity_days || 0}</p>
+                            <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                                MarsSpace
+                            </span>
                         </div>
 
-                        {/* Coins */}
-                        <div className="flex items-center space-x-2 bg-white/20 px-3 py-1.5 rounded-full">
-                            <span className="text-lg">💰</span>
-                            <div className="hidden sm:block">
-                                <p className="text-xs opacity-80">Коины</p>
-                                <p className="text-sm font-bold">{user.coins || 0}</p>
-                            </div>
-                            <p className="text-sm font-bold sm:hidden">{user.coins || 0}</p>
-                        </div>
-
-                        {/* Points */}
-                        <div className="flex items-center space-x-2 bg-white/20 px-3 py-1.5 rounded-full">
-                            <span className="text-lg">⭐</span>
-                            <div className="hidden sm:block">
-                                <p className="text-xs opacity-80">Очки</p>
-                                <p className="text-sm font-bold">{user.points || 0}</p>
-                            </div>
-                            <p className="text-sm font-bold sm:hidden">{user.points || 0}</p>
-                        </div>
-
-                        {/* User Avatar & Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowDropdown(!showDropdown)}
-                                className="flex items-center space-x-2 focus:outline-none"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center font-bold text-white border-2 border-white shadow-lg">
-                                    {user.avatar_url ? (
-                                        <img src={user.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                                    ) : (
-                                        <span>{user.first_name?.[0] || user.username?.[0] || '?'}</span>
-                                    )}
+                        {/* Stats & Actions */}
+                        <div className="flex items-center gap-6">
+                            {/* User Stats */}
+                            <div className="flex items-center gap-4">
+                                {/* Activity Days */}
+                                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-lg">
+                                    <Flame className="w-5 h-5 text-orange-500" />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-slate-400">{t('dashboard.activity_days')}</span>
+                                        <span className="text-sm font-bold">{user?.activity_days || 0}</span>
+                                    </div>
                                 </div>
+
+                                {/* Coins */}
+                                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-lg">
+                                    <CoinsIcon className="w-5 h-5 text-amber-500" />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-slate-400">{t('dashboard.coins')}</span>
+                                        <span className="text-sm font-bold">{user?.coins || 0}</span>
+                                    </div>
+                                </div>
+
+                                {/* Energy */}
+                                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-lg">
+                                    <Zap className="w-5 h-5 text-blue-500" />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-slate-400">{t('dashboard.energy')}</span>
+                                        <span className="text-sm font-bold">{user?.wallet?.energy || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Language Switcher */}
+                            <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1">
+                                <button
+                                    onClick={() => changeLanguage('ru')}
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${i18n.language === 'ru'
+                                            ? 'bg-gradient-to-r from-primary to-purple-600 text-white'
+                                            : 'text-slate-400 hover:text-white'
+                                        }`}
+                                >
+                                    RU
+                                </button>
+                                <button
+                                    onClick={() => changeLanguage('uz')}
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${i18n.language === 'uz'
+                                            ? 'bg-gradient-to-r from-primary to-purple-600 text-white'
+                                            : 'text-slate-400 hover:text-white'
+                                        }`}
+                                >
+                                    UZ
+                                </button>
+                            </div>
+
+                            {/* Subscribe Button */}
+                            {!user?.has_premium && (
+                                <button
+                                    onClick={() => setShowSubscription(true)}
+                                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105"
+                                >
+                                    {t('subscription.subscribe')}
+                                </button>
+                            )}
+
+                            {/* Notifications */}
+                            <button
+                                onClick={() => setShowNotifications(true)}
+                                className="relative p-2 hover:bg-slate-800/50 rounded-lg transition-colors"
+                            >
+                                <Bell className="w-5 h-5" />
+                                {/* Notification badge - можно добавить позже */}
+                                {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
                             </button>
 
-                            {/* Dropdown Menu */}
-                            {showDropdown && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800">
-                                    <div className="px-4 py-3 border-b border-gray-200">
-                                        <p className="text-sm font-semibold">
-                                            {user.first_name} {user.last_name}
-                                        </p>
-                                        <p className="text-xs text-gray-500">@{user.username}</p>
-                                        {user.has_premium && (
-                                            <span className="inline-block mt-1 px-2 py-0.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs rounded-full">
-                                                💎 Премиум
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Admin Dashboard Link */}
-                                    {user.role === 'ADMIN' && (
-                                        <div className="border-b border-gray-200">
-                                            <button
-                                                onClick={handleAdminDashboard}
-                                                className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 text-indigo-600 font-semibold"
-                                            >
-                                                👨‍💼 Админ панель
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {/* Language Switcher */}
-                                    <div className="px-4 py-2">
-                                        <p className="text-xs text-gray-500 mb-1">Язык / Til</p>
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => handleLanguageChange('ru')}
-                                                className={`px-3 py-1 text-sm rounded transition-colors ${user.language === 'ru'
-                                                        ? 'bg-indigo-600 text-white'
-                                                        : 'bg-gray-200 hover:bg-gray-300'
-                                                    }`}
-                                            >
-                                                🇷🇺 RU
-                                            </button>
-                                            <button
-                                                onClick={() => handleLanguageChange('uz')}
-                                                className={`px-3 py-1 text-sm rounded transition-colors ${user.language === 'uz'
-                                                        ? 'bg-indigo-600 text-white'
-                                                        : 'bg-gray-200 hover:bg-gray-300'
-                                                    }`}
-                                            >
-                                                🇺🇿 UZ
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-t border-gray-200 mt-2">
-                                        <button
-                                            onClick={() => {
-                                                logout();
-                                                setShowDropdown(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                        >
-                                            🚪 Выйти
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            {/* User Avatar */}
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center">
+                                {user?.avatar_url ? (
+                                    <img src={user.avatar_url} alt={user.username} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                    <span className="text-sm font-bold">{user?.username?.[0]?.toUpperCase()}</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
+
+            {/* Modals */}
+            {showNotifications && (
+                <NotificationsModal onClose={() => setShowNotifications(false)} />
+            )}
+            {showSubscription && (
+                <SubscriptionModal onClose={() => setShowSubscription(false)} />
+            )}
+        </>
     );
-}
+};
+
+export default Header;

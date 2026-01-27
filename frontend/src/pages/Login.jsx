@@ -17,8 +17,16 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(username, password);
-            navigate(from, { replace: true });
+            const userData = await login(username, password);
+
+            // Redirect based on role
+            if (userData?.role === 'TEACHER') {
+                navigate('/teacher', { replace: true });
+            } else if (userData?.role === 'ADMIN') {
+                navigate('/admin-panel', { replace: true });
+            } else {
+                navigate(from, { replace: true });
+            }
         } catch (err) {
             console.error(err);
             // Show user-friendly error message

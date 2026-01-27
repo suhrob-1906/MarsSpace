@@ -158,8 +158,10 @@ class LeaderboardView(views.APIView):
                 'title': season.title,
                 'start_date': season.start_date,
                 'end_date': season.end_date,
-                'rewards': season.rewards_json
+                'rewards': season.rewards_json,
+                'time_remaining': season.time_remaining()
             },
             'leaderboard': leaderboard,
             'current_user_rank': current_user_rank
         })
+

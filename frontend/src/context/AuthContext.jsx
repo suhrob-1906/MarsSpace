@@ -15,16 +15,18 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('access_token');
         if (!token) {
             setLoading(false);
-            return;
+            return null;
         }
 
         try {
             const response = await api.get('/me/');
             setUser(response.data);
+            return response.data;
         } catch (error) {
             console.error("Auth check failed", error);
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
+            return null;
         } finally {
             setLoading(false);
         }
@@ -35,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             const response = await api.post('/auth/login/', { username, password });
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
-            await checkAuth();
+            return await checkAuth();
         } catch (error) {
             // Re-throw with user-friendly message
             if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {

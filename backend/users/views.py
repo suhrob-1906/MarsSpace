@@ -13,7 +13,19 @@ class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        user = request.user
+        today = timezone.now().date()
+        
+        # Update activity streak
+        if user.last_activity_date != today:
+            if user.last_activity_date == today - timedelta(days=1):
+                user.activity_days += 1
+            else:
+                user.activity_days = 1
+            user.last_activity_date = today
+            user.save()
+            
+        serializer = UserSerializer(user)
         return Response(serializer.data)
     
     def patch(self, request):
@@ -25,14 +37,45 @@ class MeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing all users"""
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
+    
+    def get_serializer_class(self):
+        from .serializers import AdminUserSerializer
+        return AdminUserSerializer
+    
+    @action(detail=True, methods=['post'], url_path='change-role')
+    def change_role(self, request, pk=None):
+        """Change user role"""
+        user = self.get_object()
+        new_role = request.data.get('role')
+        
+        if new_role not in dict(User.Role.choices):
+            return Response(
+                {'error': f'Invalid role. Must be one of: {", ".join(dict(User.Role.choices).keys())}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.role = new_role
+        user.save()
+        
+        return Response({
+            'message': f'User role changed to {new_role}',
+            'user': self.get_serializer(user).data
+        })
 
 class StudyGroupViewSet(viewsets.ModelViewSet):
-    queryset = StudyGroup.objects.all()
     serializer_class = StudyGroupSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return StudyGroup.objects.all()
+        if user.role == 'TEACHER':
+            return StudyGroup.objects.filter(teacher=user)
+        return StudyGroup.objects.filter(activity_days__lt=-1) # Empty for students for now, or maybe their own groups
 
 class SubscriptionPurchaseView(APIView):
     """Purchase premium subscription for 100 coins"""
@@ -135,21 +178,61 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
+        queryset = Attendance.objects.all()
         
-        # Admin sees all
+        # Filter by params
+        group_id = self.request.query_params.get('group_id')
+        date = self.request.query_params.get('date')
+        
+        if group_id:
+            queryset = queryset.filter(group_id=group_id)
+        if date:
+            queryset = queryset.filter(date=date)
+            
+        # Role based filtering
         if user.role == 'ADMIN':
-            return Attendance.objects.all()
+            return queryset
         
-        # Teacher sees their groups
         if user.role == 'TEACHER':
-            return Attendance.objects.filter(group__in=user.teaching_groups.all())
+            return queryset.filter(group__in=user.teaching_groups.all())
         
-        # Student sees their own
-        return Attendance.objects.filter(student=user)
+        return queryset.filter(student=user)
     
     def perform_create(self, serializer):
         # Auto-set marked_by to current user
         serializer.save(marked_by=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def mark_attendance(self, request):
+        """Mark attendance for a single student with time validation"""
+        group_id = request.data.get('group_id')
+        student_id = request.data.get('student_id')
+        is_present = request.data.get('is_present')
+        
+        try:
+            group = StudyGroup.objects.get(id=group_id)
+        except StudyGroup.DoesNotExist:
+            return Response({'error': 'Group not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Validate time (skip if admin)
+        if not request.user.is_staff and not group.can_mark_attendance_now():
+            return Response(
+                {'error': 'Attendance can only be marked during class time'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create or update attendance
+        attendance, created = Attendance.objects.update_or_create(
+            student_id=student_id,
+            group=group,
+            date=timezone.now().date(),
+            defaults={
+                'is_present': is_present,
+                'marked_by': request.user
+            }
+        )
+        
+        return Response({'success': True})
     
     @action(detail=False, methods=['post'])
     def mark_bulk(self, request):

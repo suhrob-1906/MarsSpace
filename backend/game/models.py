@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+import datetime
 
 class Season(models.Model):
     title = models.CharField(max_length=100)
@@ -8,6 +9,18 @@ class Season(models.Model):
     end_date = models.DateField()
     rewards_json = models.JSONField(default=dict) # { "1": 300, "2": 200 ... }
     is_active = models.BooleanField(default=True)
+    is_completed = models.BooleanField(default=False)
+
+    def time_remaining(self):
+        """Returns seconds until season ends"""
+        now = timezone.now()
+        end_datetime = timezone.make_aware(datetime.datetime.combine(self.end_date, datetime.time.max))
+        
+        if now > end_datetime:
+            return 0
+        
+        delta = end_datetime - now
+        return int(delta.total_seconds())
 
     def __str__(self):
         return self.title

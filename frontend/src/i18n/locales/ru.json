@@ -1,0 +1,92 @@
+{
+    "nav": {
+        "dashboard": "Панель управления",
+        "courses": "Мои курсы",
+        "typing_game": "Typing Game",
+        "shop": "Магазин",
+        "admin_panel": "Админ панель",
+        "teacher_panel": "Панель учителя"
+    },
+    "dashboard": {
+        "welcome": "Добро пожаловать",
+        "current_season": "Текущий сезон",
+        "current_exams": "Текущие экзамены",
+        "activity_days": "Активность",
+        "coins": "Коины",
+        "energy": "Энергия",
+        "typing_speed": "Скорость печати",
+        "compete_leaderboard": "Соревнуйтесь за лидерство!",
+        "wpm_last": "WPM (Последний)",
+        "no_exams": "Нет текущих экзаменов"
+    },
+    "season": {
+        "title": "Сезон",
+        "time_remaining": "Осталось времени",
+        "days": "дней",
+        "hours": "часов",
+        "minutes": "минут",
+        "seconds": "секунд",
+        "leaderboard": "Таблица лидеров",
+        "rank": "Место",
+        "player": "Игрок",
+        "score": "Очки",
+        "reward": "Награда"
+    },
+    "typing": {
+        "title": "Typing Game",
+        "start": "Начать",
+        "wpm": "WPM",
+        "accuracy": "Точность",
+        "errors": "Ошибки",
+        "time": "Время",
+        "results": "Результаты",
+        "coins_earned": "Заработано коинов",
+        "energy_gained": "Получено энергии",
+        "play_again": "Играть снова"
+    },
+    "courses": {
+        "my_courses": "Мои курсы",
+        "start_learning": "Начать обучение",
+        "continue": "Продолжить",
+        "lessons": "уроков",
+        "progress": "Прогресс",
+        "theory": "Теория",
+        "practice": "Практика",
+        "homework": "Домашнее задание",
+        "submit": "Отправить",
+        "complete_lesson": "Завершить урок"
+    },
+    "shop": {
+        "title": "Космический магазин",
+        "buy_now": "Купить",
+        "price": "Цена",
+        "stock": "В наличии",
+        "category": "Категория",
+        "purchase_history": "История покупок",
+        "insufficient_coins": "Недостаточно коинов"
+    },
+    "notifications": {
+        "title": "Уведомления",
+        "no_new": "У вас пока нет новых уведомлений",
+        "mark_read": "Отметить прочитанным"
+    },
+    "subscription": {
+        "title": "Premium подписка",
+        "benefits": "Преимущества",
+        "price": "Цена",
+        "subscribe": "Подписаться",
+        "active": "Активна",
+        "expires": "Истекает"
+    },
+    "common": {
+        "loading": "Загрузка...",
+        "error": "Ошибка",
+        "success": "Успешно",
+        "cancel": "Отмена",
+        "save": "Сохранить",
+        "delete": "Удалить",
+        "edit": "Редактировать",
+        "close": "Закрыть",
+        "logout": "Выйти"
+    }
+}

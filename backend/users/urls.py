@@ -7,9 +7,9 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'groups', StudyGroupViewSet)
-router.register(r'attendance', AttendanceViewSet)
+router.register(r'users', UserViewSet, basename='user')
+router.register(r'groups', StudyGroupViewSet, basename='studygroup')
+router.register(r'attendance', AttendanceViewSet, basename='attendance')
 
 urlpatterns = [
     path('me/', MeView.as_view(), name='me'),

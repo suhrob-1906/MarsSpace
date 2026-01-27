@@ -1,0 +1,92 @@
+{
+    "nav": {
+        "dashboard": "Boshqaruv paneli",
+        "courses": "Mening kurslarim",
+        "typing_game": "Typing O'yini",
+        "shop": "Do'kon",
+        "admin_panel": "Admin paneli",
+        "teacher_panel": "O'qituvchi paneli"
+    },
+    "dashboard": {
+        "welcome": "Xush kelibsiz",
+        "current_season": "Joriy mavsum",
+        "current_exams": "Joriy imtihonlar",
+        "activity_days": "Faollik",
+        "coins": "Tangalar",
+        "energy": "Energiya",
+        "typing_speed": "Yozish tezligi",
+        "compete_leaderboard": "Yetakchilik uchun raqobatlashing!",
+        "wpm_last": "WPM (Oxirgi)",
+        "no_exams": "Joriy imtihonlar yo'q"
+    },
+    "season": {
+        "title": "Mavsum",
+        "time_remaining": "Qolgan vaqt",
+        "days": "kun",
+        "hours": "soat",
+        "minutes": "daqiqa",
+        "seconds": "soniya",
+        "leaderboard": "Yetakchilar jadvali",
+        "rank": "O'rin",
+        "player": "O'yinchi",
+        "score": "Ball",
+        "reward": "Mukofot"
+    },
+    "typing": {
+        "title": "Typing O'yini",
+        "start": "Boshlash",
+        "wpm": "WPM",
+        "accuracy": "Aniqlik",
+        "errors": "Xatolar",
+        "time": "Vaqt",
+        "results": "Natijalar",
+        "coins_earned": "Ishlangan tangalar",
+        "energy_gained": "Olingan energiya",
+        "play_again": "Yana o'ynash"
+    },
+    "courses": {
+        "my_courses": "Mening kurslarim",
+        "start_learning": "O'rganishni boshlash",
+        "continue": "Davom etish",
+        "lessons": "darslar",
+        "progress": "Taraqqiyot",
+        "theory": "Nazariya",
+        "practice": "Amaliyot",
+        "homework": "Uy vazifasi",
+        "submit": "Yuborish",
+        "complete_lesson": "Darsni tugatish"
+    },
+    "shop": {
+        "title": "Kosmik do'kon",
+        "buy_now": "Sotib olish",
+        "price": "Narx",
+        "stock": "Mavjud",
+        "category": "Kategoriya",
+        "purchase_history": "Xaridlar tarixi",
+        "insufficient_coins": "Tangalar yetarli emas"
+    },
+    "notifications": {
+        "title": "Bildirishnomalar",
+        "no_new": "Sizda hozircha yangi bildirishnomalar yo'q",
+        "mark_read": "O'qilgan deb belgilash"
+    },
+    "subscription": {
+        "title": "Premium obuna",
+        "benefits": "Afzalliklar",
+        "price": "Narx",
+        "subscribe": "Obuna bo'lish",
+        "active": "Faol",
+        "expires": "Tugaydi"
+    },
+    "common": {
+        "loading": "Yuklanmoqda...",
+        "error": "Xato",
+        "success": "Muvaffaqiyatli",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash",
+        "delete": "O'chirish",
+        "edit": "Tahrirlash",
+        "close": "Yopish",
+        "logout": "Chiqish"
+    }
+}

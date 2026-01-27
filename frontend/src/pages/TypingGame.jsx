@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { Timer, RefreshCw, Trophy, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Leaderboard from '../components/game/Leaderboard';
 
 const TEXT_SAMPLES = [
     "def hello_world(): print('Hello from space')",
@@ -34,7 +35,6 @@ const TypingGame = () => {
         setWpm(0);
         setAccuracy(0);
         setCompleted(false);
-        setCoinsEarned(0);
         setCoinsEarned(0);
         setErrors(0);
         setGameStarted(false);
@@ -135,92 +135,100 @@ const TypingGame = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pt-10">
-            <div className="text-center">
-                <h1 className="text-4xl font-bold text-white mb-2">Code Typing Trainer</h1>
-                <p className="text-slate-400">Type the code exactly as shown to earn coins and energy.</p>
-            </div>
+        <div className="container mx-auto pt-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+                {/* Game Area */}
+                <div className="flex-1 space-y-8">
+                    <div className="text-center">
+                        <h1 className="text-4xl font-bold text-white mb-2">Code Typing Trainer</h1>
+                        <p className="text-slate-400">Type the code exactly as shown to earn coins and energy.</p>
+                    </div>
 
-            {/* Stats Bar */}
-            {!completed && gameStarted && (
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="card text-center">
-                        <div className="text-2xl font-bold text-primary">{wpm || 0}</div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wider">WPM</div>
-                    </div>
-                    <div className="card text-center">
-                        <div className="text-2xl font-bold text-green-400">{accuracy}%</div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wider">Accuracy</div>
-                    </div>
-                    <div className="card text-center">
-                        <div className="text-2xl font-bold text-red-400">{errors}</div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wider">Errors</div>
-                    </div>
-                </div>
-            )}
-
-            <div className="card p-8 relative">
-                {/* Code Display */}
-                <div className="font-mono text-lg bg-slate-950 p-6 rounded-xl text-left mb-6 select-none border border-slate-700 overflow-x-auto">
-                    <div className="whitespace-pre-wrap">
-                        {renderText()}
-                    </div>
-                </div>
-
-                {!completed ? (
-                    <>
-                        <textarea
-                            value={input}
-                            onChange={handleChange}
-                            className="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-4 font-mono text-lg text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-32 resize-none"
-                            placeholder="Start typing here..."
-                            spellCheck="false"
-                            autoFocus
-                        />
-                        <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 text-sm">
-                            <Timer size={16} />
-                            <span>Timer starts on first keypress</span>
+                    {/* Stats Bar */}
+                    {!completed && gameStarted && (
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="card text-center p-4">
+                                <div className="text-2xl font-bold text-primary">{wpm || 0}</div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wider">WPM</div>
+                            </div>
+                            <div className="card text-center p-4">
+                                <div className="text-2xl font-bold text-green-400">{accuracy}%</div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wider">Accuracy</div>
+                            </div>
+                            <div className="card text-center p-4">
+                                <div className="text-2xl font-bold text-red-400">{errors}</div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wider">Errors</div>
+                            </div>
                         </div>
-                    </>
-                ) : (
-                    <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-8 animate-in zoom-in duration-300">
-                        <div className="text-center space-y-4">
-                            <div className="flex items-center justify-center gap-2 text-green-300 mb-4">
-                                <Trophy size={32} />
-                                <span className="text-2xl font-bold">Great job!</span>
-                            </div>
+                    )}
 
-                            <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="bg-slate-900/50 rounded-xl p-4">
-                                    <div className="text-3xl font-bold text-white mb-1">{wpm}</div>
-                                    <div className="text-sm text-slate-400">Words Per Minute</div>
-                                </div>
-                                <div className="bg-slate-900/50 rounded-xl p-4">
-                                    <div className="text-3xl font-bold text-green-400 mb-1">{accuracy}%</div>
-                                    <div className="text-sm text-slate-400">Accuracy</div>
-                                </div>
+                    <div className="card p-8 relative">
+                        {/* Code Display */}
+                        <div className="font-mono text-lg bg-slate-950 p-6 rounded-xl text-left mb-6 select-none border border-slate-700 overflow-x-auto">
+                            <div className="whitespace-pre-wrap">
+                                {renderText()}
                             </div>
+                        </div>
 
-                            {coinsEarned > 0 && (
-                                <div className="bg-slate-900/50 rounded-xl p-4 mb-6">
-                                    <div className="text-lg font-bold text-white mb-2">Rewards Earned</div>
-                                    <div className="flex items-center justify-center gap-6">
-                                        {coinsEarned > 0 && (
-                                            <div className="flex items-center gap-2 text-amber-400">
-                                                <Coins size={20} />
-                                                <span className="font-bold">+{coinsEarned} Coins</span>
-                                            </div>
-                                        )}
+                        {!completed ? (
+                            <>
+                                <textarea
+                                    value={input}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-4 font-mono text-lg text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-32 resize-none"
+                                    placeholder="Start typing here..."
+                                    spellCheck="false"
+                                    autoFocus
+                                />
+                                <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 text-sm">
+                                    <Timer size={16} />
+                                    <span>Timer starts on first keypress</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-8 animate-in zoom-in duration-300">
+                                <div className="text-center space-y-4">
+                                    <div className="flex items-center justify-center gap-2 text-green-300 mb-4">
+                                        <Trophy size={32} />
+                                        <span className="text-2xl font-bold">Great job!</span>
                                     </div>
-                                </div>
-                            )}
 
-                            <button onClick={resetGame} className="btn btn-primary mx-auto">
-                                <RefreshCw size={20} /> Play Again
-                            </button>
-                        </div>
+                                    <div className="grid grid-cols-2 gap-4 mb-6">
+                                        <div className="bg-slate-900/50 rounded-xl p-4">
+                                            <div className="text-3xl font-bold text-white mb-1">{wpm}</div>
+                                            <div className="text-sm text-slate-400">Words Per Minute</div>
+                                        </div>
+                                        <div className="bg-slate-900/50 rounded-xl p-4">
+                                            <div className="text-3xl font-bold text-green-400 mb-1">{accuracy}%</div>
+                                            <div className="text-sm text-slate-400">Accuracy</div>
+                                        </div>
+                                    </div>
+
+                                    {coinsEarned > 0 && (
+                                        <div className="bg-slate-900/50 rounded-xl p-4 mb-6">
+                                            <div className="text-lg font-bold text-white mb-2">Rewards Earned</div>
+                                            <div className="flex items-center justify-center gap-6">
+                                                <div className="flex items-center gap-2 text-amber-400">
+                                                    <Coins size={20} />
+                                                    <span className="font-bold">+{coinsEarned} Coins</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button onClick={resetGame} className="btn btn-primary mx-auto">
+                                        <RefreshCw size={20} /> Play Again
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
+
+                {/* Leaderboard Sidebar */}
+                <div className="lg:w-80 space-y-6">
+                    <Leaderboard />
+                </div>
             </div>
         </div>
     );

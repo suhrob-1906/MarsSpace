@@ -135,3 +135,37 @@ class HomeworkSubmissionViewSet(viewsets.ModelViewSet):
             'points_earned': points_earned,
             'student_total_points': student.points
         })
+
+
+# Admin ViewSets for Eduverse Management
+
+class AdminEduverseCategoryViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing Eduverse categories"""
+    queryset = EduverseCategory.objects.all()
+    serializer_class = EduverseCategorySerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class AdminEduverseVideoViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing Eduverse videos"""
+    queryset = EduverseVideo.objects.all()
+    serializer_class = EduverseVideoSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class AdminBlogPostViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing blog posts"""
+    queryset = BlogPost.objects.all().order_by('-created_at')
+    serializer_class = BlogPostSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class AdminHomeworkViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing homework assignments"""
+    queryset = Homework.objects.all()
+    serializer_class = HomeworkSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+

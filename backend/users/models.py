@@ -39,13 +39,39 @@ class User(AbstractUser):
         return f"{self.username} ({self.role})"
 
 
+from django.utils import timezone
+import datetime
+
 class StudyGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
+    
+    # Schedule
+    days_of_week = models.JSONField(default=list, help_text='List of days, e.g. ["Monday", "Wednesday"]')
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
+
+    def can_mark_attendance_now(self):
+        """Check if attendance can be marked right now"""
+        now = timezone.now()
+        today_name = now.strftime('%A')
+        
+        if today_name not in self.days_of_week:
+            return False
+            
+        if not self.start_time or not self.end_time:
+            return True # Allow if no schedule set
+        
+        current_time = now.time()
+        # Allow marking 15 mins before and up to end time
+        start_monitor = (datetime.datetime.combine(datetime.date.today(), self.start_time) - datetime.timedelta(minutes=15)).time()
+        
+        return start_monitor <= current_time <= self.end_time
 
 class Attendance(models.Model):
     """Track student attendance in study groups"""
