@@ -36,6 +36,7 @@ class AdminLessonViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    filterset_fields = ['course']  # Allow filtering by course ID
 
 class LessonViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Lesson.objects.filter(is_active=True)

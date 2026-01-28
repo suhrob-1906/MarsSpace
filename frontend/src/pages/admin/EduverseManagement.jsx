@@ -410,7 +410,7 @@ const EduverseManagement = () => {
                                             type="number"
                                             required
                                             value={formData.category || ''}
-                                            onChange={(e) => setFormData({ ...formData, category: parseInt(e.target.value) })}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value ? parseInt(e.target.value) : '' })}
                                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
                                         />
                                     </div>
@@ -502,7 +502,7 @@ const EduverseManagement = () => {
                                             type="number"
                                             required
                                             value={formData.course_category || ''}
-                                            onChange={(e) => setFormData({ ...formData, course_category: parseInt(e.target.value) })}
+                                            onChange={(e) => setFormData({ ...formData, course_category: e.target.value ? parseInt(e.target.value) : '' })}
                                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
                                         />
                                     </div>
@@ -523,7 +523,7 @@ const EduverseManagement = () => {
                                             required
                                             min="1"
                                             value={formData.max_points || 100}
-                                            onChange={(e) => setFormData({ ...formData, max_points: parseInt(e.target.value) })}
+                                            onChange={(e) => setFormData({ ...formData, max_points: e.target.value ? parseInt(e.target.value) : 100 })}
                                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
                                         />
                                     </div>

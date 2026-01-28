@@ -166,8 +166,8 @@ const CourseDetail = () => {
                                     <div className="flex items-center gap-3 mb-1">
                                         <h3 className="text-xl font-bold text-white">{lesson.title}</h3>
                                         <span className={`text-xs px-2 py-0.5 rounded ${lesson.lesson_type === 'EXAM'
-                                                ? 'bg-red-500/20 text-red-400 border border-red-500/20'
-                                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/20'
+                                            ? 'bg-red-500/20 text-red-400 border border-red-500/20'
+                                            : 'bg-blue-500/20 text-blue-400 border border-blue-500/20'
                                             }`}>
                                             {lesson.lesson_type}
                                         </span>
@@ -242,7 +242,7 @@ const CourseDetail = () => {
                                                 type="number"
                                                 required
                                                 value={formData.index}
-                                                onChange={e => setFormData({ ...formData, index: parseInt(e.target.value) })}
+                                                onChange={e => setFormData({ ...formData, index: e.target.value ? parseInt(e.target.value) : 1 })}
                                                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
                                             />
                                         </div>

@@ -9,6 +9,7 @@ dj-database-url==2.1.0
 
 # Security & CORS
 django-cors-headers==4.6.0
+django-filter==24.3
 
 # File handling
 pillow==11.0.0

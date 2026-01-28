@@ -4,7 +4,7 @@ from .models import Course, Lesson, Progress, HomeworkSubmission
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ['id', 'index', 'title', 'theory_text', 'practice_text', 'lesson_type', 'is_active']
+        fields = ['id', 'course', 'index', 'title', 'theory_text', 'practice_text', 'lesson_type', 'is_active']
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
