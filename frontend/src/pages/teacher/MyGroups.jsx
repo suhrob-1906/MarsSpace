@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { Users, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const MyGroups = () => {
-    const { t } = useTranslation();
+    // const { t } = useTranslation();
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
 

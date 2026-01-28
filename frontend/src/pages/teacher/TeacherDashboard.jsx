@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Calendar, Users, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -7,7 +7,7 @@ import api from '../../services/api';
 
 const TeacherDashboard = () => {
     const { user } = useAuth();
-    const { t } = useTranslation();
+    // const { t } = useTranslation();
     const [todayClasses, setTodayClasses] = useState([]);
     const [loading, setLoading] = useState(true);
 

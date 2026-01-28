@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import { Video, FolderOpen, FileText, BookOpen, Plus, Edit2, Trash2, Search } from 'lucide-react';
 import api from '../../services/api';
 
@@ -24,22 +24,26 @@ const EduverseManagement = () => {
         try {
             setLoading(true);
             switch (activeTab) {
-                case 'categories':
+                case 'categories': {
                     const catResponse = await api.get('/admin/eduverse/categories/');
                     setCategories(catResponse.data);
                     break;
-                case 'videos':
+                }
+                case 'videos': {
                     const vidResponse = await api.get('/admin/eduverse/videos/');
                     setVideos(vidResponse.data);
                     break;
-                case 'blog':
+                }
+                case 'blog': {
                     const blogResponse = await api.get('/admin/eduverse/blog-posts/');
                     setBlogPosts(blogResponse.data);
                     break;
-                case 'homework':
+                }
+                case 'homework': {
                     const hwResponse = await api.get('/admin/eduverse/homework/');
                     setHomework(hwResponse.data);
                     break;
+                }
             }
         } catch (error) {
             console.error('Failed to fetch data:', error);

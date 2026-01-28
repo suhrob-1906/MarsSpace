@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import {
     Users,
     BookOpen,
@@ -87,40 +87,6 @@ const AdminDashboard = () => {
         }
     };
 
-    const StatCard = ({ title, value, icon: Icon, color, link }) => (
-        <Link
-            to={link}
-            className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition-all hover:scale-105"
-        >
-            <div className="flex items-center justify-between">
-                <div>
-                    <div className="text-slate-400 text-sm mb-1">{title}</div>
-                    <div className={`text-3xl font-bold ${color}`}>
-                        {loading ? '...' : value}
-                    </div>
-                </div>
-                <div className={`p-3 rounded-lg ${color.replace('text-', 'bg-')}/10`}>
-                    <Icon className={color} size={28} />
-                </div>
-            </div>
-        </Link>
-    );
-
-    const QuickAction = ({ title, description, icon: Icon, link, color }) => (
-        <Link
-            to={link}
-            className="bg-slate-800 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all hover:scale-105 flex items-center gap-4"
-        >
-            <div className={`p-3 rounded-lg ${color.replace('text-', 'bg-')}/10`}>
-                <Icon className={color} size={24} />
-            </div>
-            <div>
-                <div className="font-medium text-white">{title}</div>
-                <div className="text-sm text-slate-400">{description}</div>
-            </div>
-        </Link>
-    );
-
     const formatTimeAgo = (date) => {
         const seconds = Math.floor((new Date() - date) / 1000);
 
@@ -149,6 +115,7 @@ const AdminDashboard = () => {
                     icon={Users}
                     color="text-blue-400"
                     link="/admin-panel/users"
+                    loading={loading}
                 />
                 <StatCard
                     title="Active Courses"
@@ -156,6 +123,7 @@ const AdminDashboard = () => {
                     icon={BookOpen}
                     color="text-green-400"
                     link="/admin-panel/courses"
+                    loading={loading}
                 />
                 <StatCard
                     title="Study Groups"
@@ -163,6 +131,7 @@ const AdminDashboard = () => {
                     icon={Users}
                     color="text-purple-400"
                     link="/admin-panel/groups"
+                    loading={loading}
                 />
                 <StatCard
                     title="Pending Homework"
@@ -170,6 +139,7 @@ const AdminDashboard = () => {
                     icon={FileText}
                     color="text-yellow-400"
                     link="/admin-panel/homework"
+                    loading={loading}
                 />
             </div>
 
@@ -368,6 +338,46 @@ const AdminDashboard = () => {
                 </div>
             </div>
         </div>
+    );
+};
+
+const StatCard = ({ title, value, icon, color, link, loading }) => {
+    const Icon = icon;
+    return (
+        <Link
+            to={link}
+            className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition-all hover:scale-105"
+        >
+            <div className="flex items-center justify-between">
+                <div>
+                    <div className="text-slate-400 text-sm mb-1">{title}</div>
+                    <div className={`text-3xl font-bold ${color}`}>
+                        {loading ? '...' : value}
+                    </div>
+                </div>
+                <div className={`p-3 rounded-lg ${color.replace('text-', 'bg-')}/10`}>
+                    <Icon className={color} size={28} />
+                </div>
+            </div>
+        </Link>
+    );
+};
+
+const QuickAction = ({ title, description, icon, link, color }) => {
+    const Icon = icon;
+    return (
+        <Link
+            to={link}
+            className="bg-slate-800 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all hover:scale-105 flex items-center gap-4"
+        >
+            <div className={`p-3 rounded-lg ${color.replace('text-', 'bg-')}/10`}>
+                <Icon className={color} size={24} />
+            </div>
+            <div>
+                <div className="font-medium text-white">{title}</div>
+                <div className="text-sm text-slate-400">{description}</div>
+            </div>
+        </Link>
     );
 };
 

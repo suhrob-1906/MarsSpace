@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { Calendar, Save, ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AttendancePage = () => {
-    const { t } = useTranslation();
+    // const { t } = useTranslation();
     const { groupId } = useParams();
     const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ const AttendancePage = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [attendanceMap, setAttendanceMap] = useState({}); // { studentId: boolean }
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    // const [saving, setSaving] = useState(false);
     const [canMark, setCanMark] = useState(false);
 
     useEffect(() => {
@@ -63,7 +63,7 @@ const AttendancePage = () => {
         }
     };
 
-    const checkCanMark = (groupData) => {
+    const checkCanMark = () => {
         // Simple client-side check, server also validates
         // This visual indicator is helpful but not secure source of truth
         const today = new Date().toISOString().split('T')[0];
@@ -193,8 +193,8 @@ const AttendancePage = () => {
                                                 onClick={() => toggleAttendance(student.id, isPresent)}
                                                 disabled={!canMark}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isPresent
-                                                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                                                        : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                                    : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
                                                     } ${!canMark ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
                                                 {isPresent ? 'Mark Absent' : 'Mark Present'}

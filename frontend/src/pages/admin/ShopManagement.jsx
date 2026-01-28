@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import { ShoppingBag, Plus, Edit2, Trash2, Search, Filter, Package } from 'lucide-react';
 import api from '../../services/api';
 
