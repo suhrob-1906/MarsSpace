@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     MeView, UserViewSet, StudyGroupViewSet,
     SubscriptionPurchaseView, SubscriptionStatusView,
-    AIChatView, AttendanceViewSet
+    AIChatView, AttendanceViewSet, AdminStatsViewSet
 )
 
 router = DefaultRouter()
