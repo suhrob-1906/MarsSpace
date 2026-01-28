@@ -44,6 +44,8 @@ class Homework(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Current Task"
+        verbose_name_plural = "Current Tasks"
     
     def __str__(self):
         return f"{self.title} - {self.course_category.title}"

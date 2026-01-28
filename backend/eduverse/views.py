@@ -153,11 +153,7 @@ class AdminEduverseVideoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
-class AdminBlogPostViewSet(viewsets.ModelViewSet):
-    """Admin viewset for managing blog posts"""
-    queryset = BlogPost.objects.all().order_by('-created_at')
-    serializer_class = BlogPostSerializer
-    permission_classes = [permissions.IsAdminUser]
+
 
 
 class AdminHomeworkViewSet(viewsets.ModelViewSet):

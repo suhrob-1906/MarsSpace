@@ -16,7 +16,7 @@ const GroupManagement = () => {
         days_of_week: [],
         start_time: '09:00',
         end_time: '10:00',
-        teacher_id: '',
+        teacher: '',
         is_active: true
     });
 
@@ -63,7 +63,7 @@ const GroupManagement = () => {
                 days_of_week: group.days_of_week || [],
                 start_time: group.start_time || '09:00',
                 end_time: group.end_time || '10:00',
-                teacher_id: group.teacher || '', // Adjust if populated object
+                teacher: group.teacher ? (typeof group.teacher === 'object' ? group.teacher.id : group.teacher) : '',
                 is_active: group.is_active
             });
         } else {
@@ -74,7 +74,7 @@ const GroupManagement = () => {
                 days_of_week: [],
                 start_time: '09:00',
                 end_time: '10:00',
-                teacher_id: '',
+                teacher: '',
                 is_active: true
             });
         }
@@ -282,8 +282,8 @@ const GroupManagement = () => {
                                                 type="button"
                                                 onClick={() => toggleDay(day.value)}
                                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${formData.days_of_week.includes(day.value)
-                                                        ? 'bg-red-600 border-red-500 text-white'
-                                                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                                                    ? 'bg-red-600 border-red-500 text-white'
+                                                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
                                                     }`}
                                             >
                                                 {day.label}
@@ -295,8 +295,8 @@ const GroupManagement = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Assign Teacher</label>
                                     <select
-                                        value={formData.teacher_id}
-                                        onChange={e => setFormData({ ...formData, teacher_id: e.target.value })}
+                                        value={formData.teacher}
+                                        onChange={e => setFormData({ ...formData, teacher: e.target.value })}
                                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500"
                                     >
                                         <option value="">-- Select Teacher --</option>

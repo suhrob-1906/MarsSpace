@@ -12,6 +12,7 @@ const Sidebar = () => {
         { name: 'My Courses', path: '/courses', icon: BookOpen },
         { name: 'Typing Game', path: '/typing', icon: Code2 },
         { name: 'Eduverse', path: '/eduverse', icon: Globe },
+        { name: 'Current Tasks', path: '/current-tasks', icon: BookOpen },
         { name: 'Space Shop', path: '/shop', icon: ShoppingBag },
     ];
 

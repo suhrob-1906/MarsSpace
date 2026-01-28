@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
-// import { useTranslation } from 'react-i18next';
-import { Video, FolderOpen, FileText, BookOpen, Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { Video, FolderOpen, BookOpen, Plus, Edit2, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 
 const EduverseManagement = () => {
-    // const { t } = useTranslation(); // Removed unused translation hook
     const [activeTab, setActiveTab] = useState('categories');
     const [categories, setCategories] = useState([]);
     const [videos, setVideos] = useState([]);
-    const [blogPosts, setBlogPosts] = useState([]);
     const [homework, setHomework] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -34,11 +31,6 @@ const EduverseManagement = () => {
                     setVideos(vidResponse.data);
                     break;
                 }
-                case 'blog': {
-                    const blogResponse = await api.get('/admin/eduverse/blog-posts/');
-                    setBlogPosts(blogResponse.data);
-                    break;
-                }
                 case 'homework': {
                     const hwResponse = await api.get('/admin/eduverse/homework/');
                     setHomework(hwResponse.data);
@@ -58,7 +50,6 @@ const EduverseManagement = () => {
             const endpoint = {
                 categories: '/admin/eduverse/categories/',
                 videos: '/admin/eduverse/videos/',
-                blog: '/admin/eduverse/blog-posts/',
                 homework: '/admin/eduverse/homework/',
             }[activeTab];
 
@@ -78,7 +69,6 @@ const EduverseManagement = () => {
             const endpoint = {
                 categories: `/admin/eduverse/categories/${selectedItem.slug || selectedItem.id}/`,
                 videos: `/admin/eduverse/videos/${selectedItem.id}/`,
-                blog: `/admin/eduverse/blog-posts/${selectedItem.id}/`,
                 homework: `/admin/eduverse/homework/${selectedItem.id}/`,
             }[activeTab];
 
@@ -100,7 +90,6 @@ const EduverseManagement = () => {
             const endpoint = {
                 categories: `/admin/eduverse/categories/${item.slug || item.id}/`,
                 videos: `/admin/eduverse/videos/${item.id}/`,
-                blog: `/admin/eduverse/blog-posts/${item.id}/`,
                 homework: `/admin/eduverse/homework/${item.id}/`,
             }[activeTab];
 
@@ -132,8 +121,6 @@ const EduverseManagement = () => {
                 return { title: '', slug: '' };
             case 'videos':
                 return { category: '', title: '', banner_url: '', video_url: '' };
-            case 'blog':
-                return { post_type: 'TEXT', content: '' };
             case 'homework':
                 return { title: '', description: '', course_category: '', due_date: '', max_points: 100, is_active: true };
             default:
@@ -144,8 +131,7 @@ const EduverseManagement = () => {
     const tabs = [
         { id: 'categories', label: 'Categories', icon: FolderOpen },
         { id: 'videos', label: 'Videos', icon: Video },
-        { id: 'blog', label: 'Blog Posts', icon: FileText },
-        { id: 'homework', label: 'Homework', icon: BookOpen },
+        { id: 'homework', label: 'Current Tasks', icon: BookOpen },
     ];
 
     return (
@@ -153,36 +139,36 @@ const EduverseManagement = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        <Video className="text-red-500" />
+                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <Video className="text-gray-400" size={28} />
                         Eduverse Management
                     </h1>
-                    <p className="text-slate-400 mt-1">Manage educational content and resources</p>
+                    <p className="text-slate-400 text-sm mt-1">Manage content and tasks</p>
                 </div>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-medium"
                 >
-                    <Plus size={20} />
-                    Create {activeTab === 'categories' ? 'Category' : activeTab === 'videos' ? 'Video' : activeTab === 'blog' ? 'Post' : 'Homework'}
+                    <Plus size={18} />
+                    Create {activeTab === 'homework' ? 'Task' : activeTab === 'categories' ? 'Category' : 'Video'}
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="bg-slate-800 rounded-lg p-2 border border-slate-700">
-                <div className="flex gap-2">
+            <div className="border-b border-slate-700">
+                <div className="flex gap-6">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all ${activeTab === tab.id
-                                    ? 'bg-red-600 text-white'
-                                    : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                                className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
+                                    ? 'border-white text-white'
+                                    : 'border-transparent text-slate-400 hover:text-white'
                                     }`}
                             >
-                                <Icon size={20} />
+                                <Icon size={18} />
                                 {tab.label}
                             </button>
                         );
@@ -191,38 +177,31 @@ const EduverseManagement = () => {
             </div>
 
             {/* Content */}
-            <div className="bg-slate-800 rounded-lg border border-slate-700">
+            <div className="bg-slate-900 rounded-lg border border-slate-800">
                 {loading ? (
-                    <div className="p-8 text-center text-slate-400">Loading...</div>
+                    <div className="p-8 text-center text-slate-500 text-sm">Loading...</div>
                 ) : (
                     <>
                         {/* Categories */}
                         {activeTab === 'categories' && (
-                            <div className="divide-y divide-slate-700">
+                            <div className="divide-y divide-slate-800">
                                 {categories.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No categories found</div>
+                                    <div className="p-8 text-center text-slate-500 text-sm">No categories found</div>
                                 ) : (
                                     categories.map(cat => (
-                                        <div key={cat.id} className="p-4 flex items-center justify-between hover:bg-slate-700/50">
+                                        <div key={cat.id} className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
                                             <div>
                                                 <div className="font-medium text-white">{cat.title}</div>
-                                                <div className="text-sm text-slate-400">Slug: {cat.slug}</div>
                                                 <div className="text-xs text-slate-500 mt-1">
-                                                    {cat.videos?.length || 0} videos
+                                                    Slug: {cat.slug} • {cat.videos?.length || 0} videos
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => openEditModal(cat)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-blue-400"
-                                                >
-                                                    <Edit2 size={18} />
+                                                <button onClick={() => openEditModal(cat)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300">
+                                                    <Edit2 size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete(cat)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-red-400"
-                                                >
-                                                    <Trash2 size={18} />
+                                                <button onClick={() => handleDelete(cat)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300 hover:text-red-400">
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>
@@ -233,129 +212,65 @@ const EduverseManagement = () => {
 
                         {/* Videos */}
                         {activeTab === 'videos' && (
-                            <div className="divide-y divide-slate-700">
+                            <div className="divide-y divide-slate-800">
                                 {videos.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No videos found</div>
+                                    <div className="p-8 text-center text-slate-500 text-sm">No videos found</div>
                                 ) : (
                                     videos.map(video => (
-                                        <div key={video.id} className="p-4 flex items-start justify-between hover:bg-slate-700/50">
-                                            <div className="flex gap-4">
-                                                {video.banner_url && (
-                                                    <img
-                                                        src={video.banner_url}
-                                                        alt={video.title}
-                                                        className="w-32 h-20 object-cover rounded-lg"
-                                                    />
-                                                )}
-                                                <div>
-                                                    <div className="font-medium text-white">{video.title}</div>
-                                                    <div className="text-sm text-slate-400 mt-1">
-                                                        Category ID: {video.category}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500 mt-1">
-                                                        {video.video_url}
-                                                    </div>
+                                        <div key={video.id} className="p-4 flex items-start gap-4 hover:bg-slate-800/50 transition-colors">
+                                            {video.banner_url && (
+                                                <img src={video.banner_url} alt="" className="w-24 h-16 object-cover rounded bg-slate-800" />
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-white truncate">{video.title}</div>
+                                                <div className="text-xs text-slate-500 mt-1">
+                                                    Category: {video.category}
+                                                </div>
+                                                <div className="text-xs text-slate-600 truncate mt-0.5">{video.video_url}</div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => openEditModal(video)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300">
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button onClick={() => handleDelete(video)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300 hover:text-red-400">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+
+                        {/* Homework (Current Tasks) */}
+                        {activeTab === 'homework' && (
+                            <div className="divide-y divide-slate-800">
+                                {homework.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-500 text-sm">No tasks found</div>
+                                ) : (
+                                    homework.map(hw => (
+                                        <div key={hw.id} className="p-4 flex items-start gap-4 hover:bg-slate-800/50 transition-colors">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium text-white">{hw.title}</span>
+                                                    {!hw.is_active && (
+                                                        <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Inactive</span>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-slate-400 mt-1 line-clamp-2">{hw.description}</div>
+                                                <div className="flex items-center gap-3 text-xs text-slate-500 mt-2">
+                                                    <span>Category: {hw.category_name}</span>
+                                                    <span>Points: {hw.max_points}</span>
+                                                    <span>Due: {new Date(hw.due_date).toLocaleDateString()}</span>
+                                                    <span>Subs: {hw.submissions_count}</span>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => openEditModal(video)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-blue-400"
-                                                >
-                                                    <Edit2 size={18} />
+                                                <button onClick={() => openEditModal(hw)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300">
+                                                    <Edit2 size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete(video)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-red-400"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-
-                        {/* Blog Posts */}
-                        {activeTab === 'blog' && (
-                            <div className="divide-y divide-slate-700">
-                                {blogPosts.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No blog posts found</div>
-                                ) : (
-                                    blogPosts.map(post => (
-                                        <div key={post.id} className="p-4 flex items-start justify-between hover:bg-slate-700/50">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${post.post_type === 'ACHIEVEMENT' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-blue-600/20 text-blue-400'
-                                                        }`}>
-                                                        {post.post_type}
-                                                    </span>
-                                                    <span className="text-sm text-slate-400">
-                                                        by {post.author_name}
-                                                    </span>
-                                                </div>
-                                                <div className="text-white">{post.content}</div>
-                                                <div className="text-xs text-slate-500 mt-2">
-                                                    ❤️ {post.like_count} likes • {new Date(post.created_at).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2 ml-4">
-                                                <button
-                                                    onClick={() => openEditModal(post)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-blue-400"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(post)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-red-400"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-
-                        {/* Homework */}
-                        {activeTab === 'homework' && (
-                            <div className="divide-y divide-slate-700">
-                                {homework.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No homework found</div>
-                                ) : (
-                                    homework.map(hw => (
-                                        <div key={hw.id} className="p-4 flex items-start justify-between hover:bg-slate-700/50">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="font-medium text-white">{hw.title}</div>
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${hw.is_active ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'
-                                                        }`}>
-                                                        {hw.is_active ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </div>
-                                                <div className="text-sm text-slate-400">{hw.description}</div>
-                                                <div className="text-xs text-slate-500 mt-2">
-                                                    Category: {hw.category_name} • Max Points: {hw.max_points} • Due: {new Date(hw.due_date).toLocaleDateString()}
-                                                </div>
-                                                <div className="text-xs text-slate-500">
-                                                    Created by {hw.created_by_name} • {hw.submissions_count} submissions
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2 ml-4">
-                                                <button
-                                                    onClick={() => openEditModal(hw)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-blue-400"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(hw)}
-                                                    className="p-2 hover:bg-slate-600 rounded-lg text-red-400"
-                                                >
-                                                    <Trash2 size={18} />
+                                                <button onClick={() => handleDelete(hw)} className="p-2 hover:bg-slate-700 rounded-md text-slate-300 hover:text-red-400">
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>
@@ -367,192 +282,164 @@ const EduverseManagement = () => {
                 )}
             </div>
 
-            {/* Modal */}
+            {/* Simplified Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-2xl font-bold text-white mb-4">
-                            {modalType === 'create' ? 'Create' : 'Edit'} {activeTab === 'categories' ? 'Category' : activeTab === 'videos' ? 'Video' : activeTab === 'blog' ? 'Post' : 'Homework'}
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                    <div className="bg-slate-900 rounded-xl p-6 max-w-md w-full border border-slate-800 shadow-xl max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-xl font-bold text-white mb-6">
+                            {modalType === 'create' ? 'Create' : 'Edit'} {activeTab === 'homework' ? 'Task' : activeTab === 'categories' ? 'Category' : 'Video'}
                         </h2>
                         <form onSubmit={modalType === 'create' ? handleCreate : handleUpdate} className="space-y-4">
-                            {/* Category Form */}
                             {activeTab === 'categories' && (
                                 <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Title *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Title</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.title || ''}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Slug *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Slug</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.slug || ''}
                                             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
                                 </>
                             )}
 
-                            {/* Video Form */}
                             {activeTab === 'videos' && (
                                 <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Category ID *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Category ID</label>
                                         <input
                                             type="number"
                                             required
                                             value={formData.category || ''}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value ? parseInt(e.target.value) : '' })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Title *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Title</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.title || ''}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Banner URL</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Banner URL</label>
                                         <input
                                             type="url"
                                             value={formData.banner_url || ''}
                                             onChange={(e) => setFormData({ ...formData, banner_url: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Video URL *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Video URL</label>
                                         <input
                                             type="url"
                                             required
                                             value={formData.video_url || ''}
                                             onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
                                 </>
                             )}
 
-                            {/* Blog Post Form */}
-                            {activeTab === 'blog' && (
-                                <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Post Type *</label>
-                                        <select
-                                            value={formData.post_type || 'TEXT'}
-                                            onChange={(e) => setFormData({ ...formData, post_type: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                                        >
-                                            <option value="TEXT">Text</option>
-                                            <option value="ACHIEVEMENT">Achievement</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Content *</label>
-                                        <textarea
-                                            required
-                                            rows="4"
-                                            value={formData.content || ''}
-                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500 resize-none"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Homework Form */}
                             {activeTab === 'homework' && (
                                 <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Title *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Title</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.title || ''}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Description *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Description</label>
                                         <textarea
                                             required
                                             rows="3"
                                             value={formData.description || ''}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500 resize-none"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm resize-none"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Category ID *</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={formData.course_category || ''}
-                                            onChange={(e) => setFormData({ ...formData, course_category: e.target.value ? parseInt(e.target.value) : '' })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-slate-400">Category ID</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                value={formData.course_category || ''}
+                                                onChange={(e) => setFormData({ ...formData, course_category: e.target.value ? parseInt(e.target.value) : '' })}
+                                                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-slate-400">Max Points</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                min="1"
+                                                value={formData.max_points || 100}
+                                                onChange={(e) => setFormData({ ...formData, max_points: e.target.value ? parseInt(e.target.value) : 100 })}
+                                                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Due Date *</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-400">Due Date</label>
                                         <input
                                             type="datetime-local"
                                             required
                                             value={formData.due_date || ''}
                                             onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-white transition-colors text-sm"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Max Points *</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            min="1"
-                                            value={formData.max_points || 100}
-                                            onChange={(e) => setFormData({ ...formData, max_points: e.target.value ? parseInt(e.target.value) : 100 })}
-                                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 pt-2">
                                         <input
                                             type="checkbox"
                                             id="is_active"
                                             checked={formData.is_active || false}
                                             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                                            className="w-4 h-4"
+                                            className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-white focus:ring-offset-0 focus:ring-0"
                                         />
                                         <label htmlFor="is_active" className="text-sm text-slate-300">Active</label>
                                     </div>
                                 </>
                             )}
 
-                            <div className="flex gap-3 pt-4">
-                                <button
-                                    type="submit"
-                                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                                >
-                                    {modalType === 'create' ? 'Create' : 'Update'}
-                                </button>
+                            <div className="flex gap-3 pt-6">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors text-sm font-medium"
                                 >
                                     Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                    {modalType === 'create' ? 'Create' : 'Update'}
                                 </button>
                             </div>
                         </form>

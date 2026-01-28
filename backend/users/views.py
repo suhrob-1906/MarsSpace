@@ -8,6 +8,7 @@ from django.conf import settings
 from .models import User, StudyGroup, Attendance
 from .serializers import UserSerializer, StudyGroupSerializer, AttendanceSerializer
 import os
+from courses.models import Course
 
 class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -74,8 +75,19 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
         if user.role == 'ADMIN':
             return StudyGroup.objects.all()
         if user.role == 'TEACHER':
-            return StudyGroup.objects.filter(teacher=user)
-        return StudyGroup.objects.filter(activity_days__lt=-1) # Empty for students for now, or maybe their own groups
+            return user.teaching_groups.all()
+        return user.learning_groups.all()
+
+class AdminStatsViewSet(viewsets.ViewSet):
+    """Dashboard statistics for admin"""
+    permission_classes = [permissions.IsAdminUser]
+
+    def list(self, request):
+        return Response({
+            "users_count": User.objects.count(),
+            "courses_count": Course.objects.count(),
+            "groups_count": StudyGroup.objects.count()
+        })
 
 class SubscriptionPurchaseView(APIView):
     """Purchase premium subscription for 100 coins"""

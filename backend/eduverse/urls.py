@@ -4,7 +4,7 @@ from .views import (
     EduverseCategoryViewSet, EduverseVideoViewSet, BlogPostViewSet,
     HomeworkViewSet, HomeworkSubmissionViewSet,
     AdminEduverseCategoryViewSet, AdminEduverseVideoViewSet,
-    AdminBlogPostViewSet, AdminHomeworkViewSet
+    AdminHomeworkViewSet
 )
 
 router = DefaultRouter()
@@ -17,7 +17,6 @@ router.register(r'homework-submissions', HomeworkSubmissionViewSet, basename='ho
 # Admin routes
 router.register(r'admin/eduverse/categories', AdminEduverseCategoryViewSet, basename='admin-eduverse-category')
 router.register(r'admin/eduverse/videos', AdminEduverseVideoViewSet, basename='admin-eduverse-video')
-router.register(r'admin/eduverse/blog-posts', AdminBlogPostViewSet, basename='admin-blog-post')
 router.register(r'admin/eduverse/homework', AdminHomeworkViewSet, basename='admin-homework')
 
 urlpatterns = [
