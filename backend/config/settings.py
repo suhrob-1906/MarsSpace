@@ -42,6 +42,8 @@ if 'localhost' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('localhost')
 if '127.0.0.1' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('127.0.0.1')
+if 'mars-space-59ri.vercel.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('mars-space-59ri.vercel.app')
 
 
 # Application definition
@@ -166,7 +168,8 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOWED_ORIGINS.extend([
     "http://localhost:5173",
     "https://marsspace-frontend.vercel.app",
-    "https://project-mentor-one.vercel.app"
+    "https://project-mentor-one.vercel.app",
+    "https://mars-space-59ri.vercel.app"
 ])
 
 if '*' in CORS_ALLOWED_ORIGINS:
@@ -182,7 +185,8 @@ CSRF_TRUSTED_ORIGINS.extend([
     "https://marsspace-backend.onrender.com", 
     "https://marsspace-frontend.vercel.app",
     "https://project-mentor-one.vercel.app",
-    "https://*.vercel.app"
+    "https://*.vercel.app",
+    "https://mars-space-59ri.vercel.app"
 ])
 
 # Security Settings (Production)
