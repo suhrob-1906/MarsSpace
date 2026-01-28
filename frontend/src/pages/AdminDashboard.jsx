@@ -40,48 +40,59 @@ const AdminDashboard = () => {
         try {
             setLoading(true);
 
-            // Fetch users
-            const usersResponse = await api.get('/users/');
-            const users = usersResponse.data;
+            // Fetch all data in parallel
+            const [usersResponse, statsResponse, groupsResponse, homeworkResponse] = await Promise.all([
+                api.get('/users/'),
+                api.get('/stats/'),
+                api.get('/study_groups/'),
+                api.get('/admin/homework/').catch(() => ({ data: [] })) // Optional endpoint
+            ]);
 
-            // Fetch courses
-            const coursesResponse = await api.get('/admin/courses/');
-            const courses = coursesResponse.data;
-
-            // Fetch groups
-            const groupsResponse = await api.get('/groups/');
-            const groups = groupsResponse.data;
-
-            // Fetch homework submissions
-            const homeworkResponse = await api.get('/admin/homework/');
-            const submissions = homeworkResponse.data;
+            const users = usersResponse.data.results || usersResponse.data;
+            const stats = statsResponse.data;
+            const groups = groupsResponse.data.results || groupsResponse.data;
+            const submissions = homeworkResponse.data.results || homeworkResponse.data;
 
             setStats({
-                totalUsers: users.length,
+                totalUsers: stats.users_count || users.length,
                 totalStudents: users.filter(u => u.role === 'STUDENT').length,
                 totalTeachers: users.filter(u => u.role === 'TEACHER').length,
                 totalAdmins: users.filter(u => u.role === 'ADMIN').length,
-                totalCourses: courses.length,
-                activeCourses: courses.filter(c => c.is_active).length,
-                totalGroups: groups.length,
+                totalCourses: stats.courses_count || 0,
+                activeCourses: stats.courses_count || 0,
+                totalGroups: stats.groups_count || groups.length,
                 activeGroups: groups.filter(g => g.is_active).length,
-                pendingHomework: submissions.filter(s => s.status === 'SUBMITTED').length,
-                totalSubmissions: submissions.length,
+                pendingHomework: Array.isArray(submissions) ? submissions.filter(s => s.status === 'SUBMITTED').length : 0,
+                totalSubmissions: Array.isArray(submissions) ? submissions.length : 0,
             });
 
             // Create recent activity from submissions
-            const recentSubmissions = submissions
-                .slice(0, 5)
-                .map(s => ({
-                    type: 'homework',
-                    message: `${s.student_name} submitted homework for ${s.lesson_title}`,
-                    time: new Date(s.created_at),
-                    status: s.status,
-                }));
-
-            setRecentActivity(recentSubmissions);
+            if (Array.isArray(submissions) && submissions.length > 0) {
+                const recentSubmissions = submissions
+                    .slice(0, 5)
+                    .map(s => ({
+                        type: 'homework',
+                        message: `${s.student_name || 'Student'} submitted homework for ${s.lesson_title || 'lesson'}`,
+                        time: new Date(s.created_at),
+                        status: s.status,
+                    }));
+                setRecentActivity(recentSubmissions);
+            }
         } catch (error) {
             console.error('Failed to fetch dashboard data:', error);
+            // Set default values on error
+            setStats({
+                totalUsers: 0,
+                totalStudents: 0,
+                totalTeachers: 0,
+                totalAdmins: 0,
+                totalCourses: 0,
+                activeCourses: 0,
+                totalGroups: 0,
+                activeGroups: 0,
+                pendingHomework: 0,
+                totalSubmissions: 0,
+            });
         } finally {
             setLoading(false);
         }

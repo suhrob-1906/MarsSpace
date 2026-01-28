@@ -46,6 +46,16 @@ class StudyGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     
+    # Primary teacher assigned to this group
+    teacher = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='assigned_groups',
+        help_text='Primary teacher for this group'
+    )
+    
     # Schedule
     days_of_week = models.JSONField(default=list, help_text='List of days, e.g. ["Monday", "Wednesday"]')
     start_time = models.TimeField(null=True, blank=True)

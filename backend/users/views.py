@@ -72,11 +72,13 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = StudyGroup.objects.select_related('teacher').prefetch_related('students', 'teachers')
+        
         if user.role == 'ADMIN':
-            return StudyGroup.objects.all()
+            return queryset
         if user.role == 'TEACHER':
-            return user.teaching_groups.all()
-        return user.learning_groups.all()
+            return queryset.filter(teachers=user) | queryset.filter(teacher=user)
+        return queryset.filter(students=user)
 
 class AdminStatsViewSet(viewsets.ViewSet):
     """Dashboard statistics for admin"""
