@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Clock, BookOpen, AlertCircle, CheckCircle, XCircle, FileText } from 'lucide-react';
+import { Users, Clock, BookOpen, AlertCircle, CheckCircle, XCircle, FileText, Target } from 'lucide-react';
 import api from '../../services/api';
 import CountdownTimer from '../../components/CountdownTimer';
 import { Link } from 'react-router-dom';

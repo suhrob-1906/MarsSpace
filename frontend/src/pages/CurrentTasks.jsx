@@ -21,11 +21,12 @@ const CurrentTasks = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [tasksRes, subsRes] = await Promise.all([
-                api.get('/homework/'),
-                api.get('/homework-submissions/')
+            const [lessonsRes, subsRes] = await Promise.all([
+                api.get('/lessons/'),
+                api.get('/homework/')
             ]);
-            setTasks(tasksRes.data);
+            // Show all active lessons as potential homework tasks
+            setTasks(lessonsRes.data);
             setSubmissions(subsRes.data);
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
@@ -36,9 +37,10 @@ const CurrentTasks = () => {
     };
 
     const getSubmissionStatus = (taskId) => {
-        const sub = submissions.find(s => s.homework === taskId);
+        const sub = submissions.find(s => s.lesson === taskId);
         if (!sub) return 'pending';
-        if (sub.graded_at) return 'graded';
+        if (sub.status === 'ACCEPTED') return 'graded';
+        if (sub.status === 'REJECTED') return 'rejected';
         return 'submitted';
     };
 
@@ -54,21 +56,18 @@ const CurrentTasks = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!submissionText && !submissionFile) {
-            toast.error('Please add text or a file');
+        if (!submissionFile) {
+            toast.error('Please upload a ZIP file');
             return;
         }
 
         setSubmitting(true);
         const formData = new FormData();
-        formData.append('homework', selectedTask.id);
-        formData.append('content', submissionText);
-        if (submissionFile) {
-            formData.append('file_url', submissionFile);
-        }
+        formData.append('lesson', selectedTask.id);
+        formData.append('file', submissionFile);
 
         try {
-            await api.post('/homework-submissions/', formData, {
+            await api.post('/homework/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             toast.success('Homework submitted successfully! 🚀');
