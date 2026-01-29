@@ -50,36 +50,35 @@ export default function SubscriptionCard({ user, onPurchaseSuccess }) {
 
     // Purchase card
     return (
-        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg p-6 text-white shadow-lg">
-            <div className="flex items-start justify-between">
+        <div className="bg-white rounded-2xl p-6 shadow-xl border border-orange-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+            <div className="flex items-start justify-between relative z-10">
                 <div className="flex-1">
-                    <h3 className="text-2xl font-bold flex items-center">
-                        💎 Премиум подписка
+                    <h3 className="text-2xl font-black flex items-center text-slate-800">
+                        <span className="bg-orange-100 p-2 rounded-lg mr-3 text-2xl">👑</span>
+                        Premium Access
                     </h3>
-                    <p className="mt-2 opacity-90">
-                        Получи доступ к эксклюзивным курсам и материалам
+                    <p className="mt-2 text-slate-600">
+                        Unlock the full potential of your education journey!
                     </p>
-                    <ul className="mt-4 space-y-2 text-sm">
+                    <ul className="mt-6 space-y-3 text-sm text-slate-600">
                         <li className="flex items-center">
-                            <span className="mr-2">✓</span>
-                            Доступ ко всем курсам
+                            <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mr-3 text-xs">✓</span>
+                            Access to all Eduverse video lessons
                         </li>
                         <li className="flex items-center">
-                            <span className="mr-2">✓</span>
-                            Приоритетная поддержка
+                            <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mr-3 text-xs">✓</span>
+                            Create posts in Community
                         </li>
                         <li className="flex items-center">
-                            <span className="mr-2">✓</span>
-                            Эксклюзивные материалы
-                        </li>
-                        <li className="flex items-center">
-                            <span className="mr-2">✓</span>
-                            Специальный бейдж
+                            <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mr-3 text-xs">✓</span>
+                            Valid for 30 days
                         </li>
                     </ul>
 
                     {error && (
-                        <div className="mt-4 bg-red-500/20 border border-red-300 rounded px-3 py-2 text-sm">
+                        <div className="mt-4 bg-red-50 text-red-500 border border-red-100 rounded-lg px-3 py-2 text-sm">
                             {error}
                         </div>
                     )}
@@ -87,27 +86,26 @@ export default function SubscriptionCard({ user, onPurchaseSuccess }) {
                     <button
                         onClick={handlePurchase}
                         disabled={loading || user.coins < 100}
-                        className={`mt-6 px-6 py-3 rounded-lg font-bold text-lg transition-all ${loading || user.coins < 100
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-white text-indigo-600 hover:bg-gray-100 hover:scale-105'
+                        className={`mt-6 w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg ${loading || user.coins < 100
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-orange-500/40 hover:-translate-y-1'
                             }`}
                     >
                         {loading ? (
-                            'Обработка...'
+                            'Processing...'
                         ) : (
-                            <>
-                                Купить за 100 💰
-                                {user.coins < 100 && (
-                                    <span className="block text-xs mt-1">
-                                        (У вас {user.coins} коинов)
-                                    </span>
-                                )}
-                            </>
+                            <div className="flex items-center justify-center gap-2">
+                                <span>Get Premium</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-sm">100 🟡</span>
+                            </div>
                         )}
                     </button>
+                    {user.coins < 100 && (
+                        <p className="text-center text-xs text-slate-400 mt-2">
+                            You have {user.coins} coins
+                        </p>
+                    )}
                 </div>
-
-                <div className="text-6xl ml-4">💎</div>
             </div>
         </div>
     );

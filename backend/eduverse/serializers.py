@@ -18,7 +18,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BlogPost
-        fields = ['id', 'author_name', 'post_type', 'content', 'like_count', 'created_at']
+        fields = ['id', 'author_name', 'post_type', 'content', 'image_url', 'like_count', 'created_at']
 
 class HomeworkSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='course_category.title', read_only=True)

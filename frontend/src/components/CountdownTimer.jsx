@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const CountdownTimer = ({ endDate, timeRemaining }) => {
+const CountdownTimer = ({ endDate }) => {
     const { t } = useTranslation();
     const [time, setTime] = useState({
         days: 0,
@@ -12,15 +12,24 @@ const CountdownTimer = ({ endDate, timeRemaining }) => {
 
     useEffect(() => {
         const calculateTime = () => {
-            if (!timeRemaining || timeRemaining <= 0) {
+            if (!endDate) {
                 setTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
                 return;
             }
 
-            const days = Math.floor(timeRemaining / (24 * 60 * 60));
-            const hours = Math.floor((timeRemaining % (24 * 60 * 60)) / (60 * 60));
-            const minutes = Math.floor((timeRemaining % (60 * 60)) / 60);
-            const seconds = Math.floor(timeRemaining % 60);
+            const now = new Date().getTime();
+            const end = new Date(endDate).getTime();
+            const difference = end - now;
+
+            if (difference <= 0) {
+                setTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                return;
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
             setTime({ days, hours, minutes, seconds });
         };
@@ -29,7 +38,7 @@ const CountdownTimer = ({ endDate, timeRemaining }) => {
         const interval = setInterval(calculateTime, 1000);
 
         return () => clearInterval(interval);
-    }, [timeRemaining]);
+    }, [endDate]);
 
     return (
         <div className="flex gap-3">

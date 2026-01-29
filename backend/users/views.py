@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.conf import settings
 from .models import User, StudyGroup, Attendance
 from .serializers import UserSerializer, StudyGroupSerializer, AttendanceSerializer
@@ -184,6 +184,71 @@ class AIChatView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class TeacherStatsViewSet(viewsets.ViewSet):
+    """Dashboard statistics for teachers"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        if request.user.role != 'TEACHER':
+            return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        # Get teacher's groups
+        groups = StudyGroup.objects.filter(teachers=request.user) | StudyGroup.objects.filter(teacher=request.user)
+        groups = groups.distinct()
+        
+        # Calculate total students
+        total_students = User.objects.filter(learning_groups__in=groups).distinct().count()
+        
+        # Find next lesson
+        now = timezone.now()
+        today = now.date()
+        current_time = now.time()
+        
+        next_lesson = None
+        min_time_diff = float('inf')
+        
+        weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        current_weekday_idx = now.weekday()
+        
+        for group in groups:
+            if not group.days_of_week or not group.start_time:
+                continue
+                
+            for day in group.days_of_week:
+                try:
+                    day_idx = weekdays.index(day)
+                except ValueError:
+                    continue
+                    
+                days_ahead = (day_idx - current_weekday_idx)
+                if days_ahead < 0:
+                    days_ahead += 7
+                
+                # If today, check if start time is in future
+                if days_ahead == 0 and group.start_time <= current_time:
+                    days_ahead = 7
+                
+                lesson_date = today + timedelta(days=days_ahead)
+                lesson_datetime = timezone.make_aware(datetime.combine(lesson_date, group.start_time))
+                
+                time_diff = (lesson_datetime - now).total_seconds()
+                
+                if 0 <= time_diff < min_time_diff:
+                    min_time_diff = time_diff
+                    next_lesson = {
+                        'group_id': group.id,
+                        'group_name': group.name,
+                        'start': lesson_datetime,
+                        'end': timezone.make_aware(datetime.combine(lesson_date, group.end_time)),
+                        'seconds_until': int(time_diff)
+                    }
+        
+        return Response({
+            'total_students': total_students,
+            'active_groups': groups.filter(is_active=True).count(),
+            'next_lesson': next_lesson
+        })
+
 class AttendanceViewSet(viewsets.ModelViewSet):
     """Manage student attendance"""
     queryset = Attendance.objects.all()
@@ -208,7 +273,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             return queryset
         
         if user.role == 'TEACHER':
-            return queryset.filter(group__in=user.teaching_groups.all())
+            return queryset.filter(group__in=StudyGroup.objects.filter(teachers=user) | StudyGroup.objects.filter(teacher=user))
         
         return queryset.filter(student=user)
     
@@ -231,7 +296,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         # Validate time (skip if admin)
         if not request.user.is_staff and not group.can_mark_attendance_now():
             return Response(
-                {'error': 'Attendance can only be marked during class time'},
+                {'error': 'Attendance can only be marked during class time (15 mins before start until end)'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -261,6 +326,25 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 {'error': 'group_id, date, and student_ids are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        try:
+            group = StudyGroup.objects.get(id=group_id)
+        except StudyGroup.DoesNotExist:
+            return Response({'error': 'Group not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate time (skip if admin)
+        current_date_str = timezone.now().strftime('%Y-%m-%d')
+        if not request.user.is_staff:
+             if date != current_date_str:
+                 return Response(
+                     {'error': 'Teachers can only mark attendance for today'},
+                     status=status.HTTP_400_BAD_REQUEST
+                 )
+             if not group.can_mark_attendance_now():
+                 return Response(
+                     {'error': 'Attendance can only be marked during class time'},
+                     status=status.HTTP_400_BAD_REQUEST
+                 )
         
         created_count = 0
         for student_id in student_ids:

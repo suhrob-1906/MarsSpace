@@ -25,6 +25,7 @@ class BlogPost(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='posts', on_delete=models.CASCADE)
     post_type = models.CharField(max_length=20, choices=Type.choices, default=Type.TEXT)
     content = models.TextField()
+    image_url = models.CharField(max_length=500, blank=True, null=True)
     like_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

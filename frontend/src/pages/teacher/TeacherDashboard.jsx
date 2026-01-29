@@ -1,108 +1,164 @@
-import { useEffect, useState } from 'react';
-// import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
-import { Calendar, Users, Clock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Users, Clock, BookOpen, AlertCircle, CheckCircle, XCircle, FileText } from 'lucide-react';
 import api from '../../services/api';
+import CountdownTimer from '../../components/CountdownTimer';
+import { Link } from 'react-router-dom';
 
 const TeacherDashboard = () => {
-    const { user } = useAuth();
-    // const { t } = useTranslation();
-    const [todayClasses, setTodayClasses] = useState([]);
+    const [stats, setStats] = useState({
+        total_students: 0,
+        active_groups: 0,
+        next_lesson: null
+    });
+    const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchTodayClasses();
+        const fetchDashboardData = async () => {
+            try {
+                const [statsRes, homeworkRes] = await Promise.all([
+                    api.get('/teacher/stats/'),
+                    api.get('/admin/homework/submissions/') // Reusing existing endpoint or need a filtered one
+                ]);
+
+                setStats(statsRes.data);
+
+                // If the user is teacher, the list call typically returns submissions for their groups
+                // based on the queryset we saw earlier
+                const subData = homeworkRes.data.results || homeworkRes.data;
+                setSubmissions(Array.isArray(subData) ? subData.slice(0, 5) : []);
+
+            } catch (error) {
+                console.error("Failed to fetch teacher dashboard", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
     }, []);
 
-    const fetchTodayClasses = async () => {
-        try {
-            // Fetch groups and filter for today
-            // Ideally backend should provide this endpoint
-            const res = await api.get('/study_groups/');
-            const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-
-            const classes = res.data.filter(g => g.days_of_week?.includes(today));
-            setTodayClasses(classes);
-        } catch (error) {
-            console.error("Failed to fetch classes", error);
-        } finally {
-            setLoading(false);
-        }
+    const isLessonNow = (lesson) => {
+        if (!lesson) return false;
+        // If seconds until is 0 or negative (but logically handled by backend returning 0 for "now")
+        // Actually backend logic sets days_ahead to 7 if passed, so we trust seconds_until
+        return lesson.seconds_until < (60 * 15); // Show "Now" if within 15 mins
     };
 
+    if (loading) return <div className="text-center text-slate-400 py-10">Loading dashboard...</div>;
+
     return (
-        <div className="max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">Welcome back, {user?.first_name || 'Teacher'}! 👋</h1>
-            <p className="text-slate-500 mb-8">Here's what's happening today.</p>
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">Teacher Dashboard</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg shadow-blue-200">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="bg-white/20 p-2 rounded-lg">
-                            <Calendar size={24} />
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                {/* Total Students */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                            <Users className="text-indigo-600" size={24} />
                         </div>
-                        <span className="text-sm font-medium opacity-80">Today</span>
+                        <div>
+                            <div className="text-3xl font-bold text-slate-800">{stats.total_students}</div>
+                            <div className="text-sm text-slate-500">Total Students</div>
+                        </div>
                     </div>
-                    <div className="text-3xl font-bold mb-1">{todayClasses.length}</div>
-                    <div className="text-sm opacity-90">Classes Scheduled</div>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="bg-purple-100 text-purple-600 p-2 rounded-lg">
-                            <Users size={24} />
+                {/* Active Groups */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <BookOpen className="text-purple-600" size={24} />
+                        </div>
+                        <div>
+                            <div className="text-3xl font-bold text-slate-800">{stats.active_groups}</div>
+                            <div className="text-sm text-slate-500">Active Groups</div>
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-slate-800 mb-1">0</div>
-                    <div className="text-sm text-slate-500">Students Active</div>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
-                            <Clock size={24} />
+                {/* Next Lesson */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm col-span-1 md:col-span-1">
+                    <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <Clock className="text-orange-600" size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800">Next Lesson</h3>
+                                {stats.next_lesson ? (
+                                    <p className="text-sm text-slate-500">
+                                        {stats.next_lesson.group_name}
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-slate-400">No upcoming lessons</p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-slate-800 mb-1">--</div>
-                    <div className="text-sm text-slate-500">Next Class</div>
+
+                    {stats.next_lesson && (
+                        <div className="mt-4">
+                            <CountdownTimer endDate={stats.next_lesson.start} />
+                            <div className="mt-4 flex gap-2">
+                                <Link
+                                    to={`/teacher/attendance/${stats.next_lesson.group_id}`}
+                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    Mark Attendance
+                                </Link>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <h2 className="text-xl font-bold text-slate-800 mb-4">Today's Classes</h2>
-            {loading ? (
-                <div className="text-center py-8">Loading schedule...</div>
-            ) : todayClasses.length > 0 ? (
-                <div className="grid gap-4">
-                    {todayClasses.map(group => (
-                        <div key={group.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-50 text-blue-600 p-3 rounded-lg font-bold text-lg w-16 text-center">
-                                    {group.start_time?.slice(0, 5)}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-900">{group.name}</h3>
-                                    <div className="text-sm text-slate-500 flex items-center gap-2">
-                                        <Users size={14} /> {group.students_count} Students
-                                    </div>
-                                </div>
-                            </div>
-                            <Link
-                                to={`/teacher/attendance/${group.id}`}
-                                className="btn btn-outline text-sm flex items-center gap-2"
-                            >
-                                Mark Attendance <ArrowRight size={16} />
-                            </Link>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-8 text-center">
-                    <Calendar className="mx-auto h-12 w-12 text-slate-400 mb-3" />
-                    <h3 className="font-medium text-slate-900">No classes scheduled for today</h3>
-                    <p className="text-slate-500 text-sm">Enjoy your day off!</p>
+            {/* Attendance Warning / Action */}
+            {stats.next_lesson && stats.next_lesson.seconds_until < 900 && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4">
+                    <AlertCircle className="text-green-600" size={24} />
+                    <div className="flex-1">
+                        <h4 className="font-bold text-slate-800">Class is starting soon!</h4>
+                        <p className="text-sm text-slate-600">
+                            Don't forget to mark attendance for <strong>{stats.next_lesson.group_name}</strong>.
+                        </p>
+                    </div>
+                    <Link to={`/teacher/attendance/${stats.next_lesson.group_id}`} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                        Go to Attendance
+                    </Link>
                 </div>
             )}
+
+            {/* Recent Submissions */}
+            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h3 className="font-bold text-slate-800 mb-4">Recent Homework Submissions</h3>
+                {submissions.length > 0 ? (
+                    <div className="space-y-4">
+                        {submissions.map((sub) => (
+                            <div key={sub.id} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                                        <FileText size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-slate-800">{sub.student_name || 'Student'}</div>
+                                        <div className="text-sm text-slate-500">{sub.homework_title || 'Homework'}</div>
+                                    </div>
+                                </div>
+                                <div className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${sub.grade ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                    }`}>
+                                    {sub.grade ? `Graded: ${sub.grade}` : 'Needs Grading'}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-slate-400 text-center py-8">No recent submissions found.</p>
+                )}
+            </div>
         </div>
     );
 };

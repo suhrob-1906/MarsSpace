@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     MeView, UserViewSet, StudyGroupViewSet,
     SubscriptionPurchaseView, SubscriptionStatusView,
-    AIChatView, AttendanceViewSet, AdminStatsViewSet
+    AIChatView, AttendanceViewSet, AdminStatsViewSet,
+    TeacherStatsViewSet
 )
 
 router = DefaultRouter()
@@ -11,6 +12,7 @@ router.register(r'users', UserViewSet, basename='user')
 router.register(r'groups', StudyGroupViewSet, basename='studygroup')
 router.register(r'study_groups', StudyGroupViewSet, basename='studygroup_alias') # Alias to fix frontend 404
 router.register(r'stats', AdminStatsViewSet, basename='admin_stats')
+router.register(r'teacher/stats', TeacherStatsViewSet, basename='teacher_stats')
 router.register(r'attendance', AttendanceViewSet, basename='attendance')
 
 urlpatterns = [

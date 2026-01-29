@@ -4,7 +4,7 @@ import Header from '../Header';
 
 const Layout = () => {
     return (
-        <div className="min-h-screen bg-background flex font-sans text-slate-200">
+        <div className="min-h-screen bg-slate-50 flex font-sans text-slate-800">
             <Sidebar />
             <div className="flex-1 flex flex-col">
                 <Header />

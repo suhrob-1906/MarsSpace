@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 const GroupManagement = () => {
     const [groups, setGroups] = useState([]);
     const [teachers, setTeachers] = useState([]);
+    const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingGroup, setEditingGroup] = useState(null);
@@ -17,6 +18,7 @@ const GroupManagement = () => {
         start_time: '09:00',
         end_time: '10:00',
         teacher: '',
+        student_ids: [],
         is_active: true
     });
 
@@ -36,16 +38,20 @@ const GroupManagement = () => {
 
     const fetchData = async () => {
         try {
-            const [groupsRes, teachersRes] = await Promise.all([
+            const [groupsRes, usersRes] = await Promise.all([
                 api.get('/study_groups/'),
-                api.get('/users/', { params: { role: 'TEACHER' } }) // Assuming filter exists or we filter client side
+                api.get('/users/')
             ]);
             setGroups(groupsRes.data);
 
-            // If backend doesn't support role filter yet, filter here
-            const allUsers = teachersRes.data.results || teachersRes.data;
-            const teacherList = Array.isArray(allUsers) ? allUsers.filter(u => u.role === 'TEACHER') : [];
-            setTeachers(teacherList);
+            // Filter users by role
+            const allUsers = usersRes.data.results || usersRes.data;
+            if (Array.isArray(allUsers)) {
+                const teacherList = allUsers.filter(u => u.role === 'TEACHER');
+                const studentList = allUsers.filter(u => u.role === 'STUDENT');
+                setTeachers(teacherList);
+                setStudents(studentList);
+            }
         } catch (error) {
             console.error("Failed to fetch data", error);
             toast.error("Failed to load data");
@@ -64,6 +70,7 @@ const GroupManagement = () => {
                 start_time: group.start_time || '09:00',
                 end_time: group.end_time || '10:00',
                 teacher: group.teacher ? (typeof group.teacher === 'object' ? group.teacher.id : group.teacher) : '',
+                student_ids: group.students ? group.students.map(s => s.id) : [],
                 is_active: group.is_active
             });
         } else {
@@ -75,6 +82,7 @@ const GroupManagement = () => {
                 start_time: '09:00',
                 end_time: '10:00',
                 teacher: '',
+                student_ids: [],
                 is_active: true
             });
         }
@@ -304,6 +312,36 @@ const GroupManagement = () => {
                                             <option key={teacher.id} value={teacher.id}>{teacher.username} ({teacher.first_name} {teacher.last_name})</option>
                                         ))}
                                     </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-2">Assign Students</label>
+                                    <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 max-h-48 overflow-y-auto">
+                                        {students.length === 0 ? (
+                                            <p className="text-slate-500 text-sm text-center py-2">No students available</p>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {students.map(student => (
+                                                    <label key={student.id} className="flex items-center gap-2 p-2 hover:bg-slate-800 rounded cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.student_ids.includes(student.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFormData({ ...formData, student_ids: [...formData.student_ids, student.id] });
+                                                                } else {
+                                                                    setFormData({ ...formData, student_ids: formData.student_ids.filter(id => id !== student.id) });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 rounded bg-slate-800 border-slate-600 text-red-600 focus:ring-red-500"
+                                                        />
+                                                        <span className="text-sm text-white">{student.username} ({student.first_name} {student.last_name})</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1">{formData.student_ids.length} student(s) selected</p>
                                 </div>
 
                                 <div className="flex items-center gap-2">

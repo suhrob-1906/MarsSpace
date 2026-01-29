@@ -8,6 +8,7 @@ import Courses from './pages/Courses';
 import CoursePlayer from './pages/CoursePlayer';
 import TypingGame from './pages/TypingGame';
 import Eduverse from './pages/Eduverse';
+import Blogs from './pages/Blogs';
 import CurrentTasks from './pages/CurrentTasks';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
@@ -47,6 +48,7 @@ function App() {
             <Route path="courses/:id" element={<CoursePlayer />} />
             <Route path="typing" element={<TypingGame />} />
             <Route path="eduverse" element={<Eduverse />} />
+            <Route path="blogs" element={<Blogs />} />
             <Route path="current-tasks" element={<CurrentTasks />} />
           </Route>
 

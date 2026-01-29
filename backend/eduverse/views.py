@@ -8,16 +8,18 @@ from .serializers import (
     BlogPostSerializer, HomeworkSerializer, HomeworkSubmissionSerializer
 )
 
+from users.permissions import IsPremiumUser
+
 class EduverseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EduverseCategory.objects.all()
     serializer_class = EduverseCategorySerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'slug'
 
-class EduverseVideoViewSet(viewsets.ModelViewSet):
+class EduverseVideoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EduverseVideo.objects.all()
     serializer_class = EduverseVideoSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsPremiumUser]
 
 class BlogPostViewSet(viewsets.ModelViewSet):
     queryset = BlogPost.objects.all().order_by('-created_at')
