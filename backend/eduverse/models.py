@@ -13,6 +13,7 @@ class EduverseVideo(models.Model):
     title = models.CharField(max_length=200)
     banner_url = models.CharField(max_length=500, blank=True)
     video_url = models.CharField(max_length=500)
+    is_premium = models.BooleanField(default=True, help_text="If true, only premium users can watch this")
     
     def __str__(self):
         return self.title
@@ -56,7 +57,7 @@ class HomeworkSubmission(models.Model):
     homework = models.ForeignKey(Homework, on_delete=models.CASCADE, related_name='submissions')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='homework_submissions')
     content = models.TextField(help_text="Student's answer or solution")
-    file_url = models.CharField(max_length=500, blank=True, help_text="Optional file attachment URL")
+    file_url = models.FileField(upload_to='submissions/', blank=True, null=True, help_text="Optional file attachment")
     points_earned = models.IntegerField(default=0, help_text="Points awarded by teacher")
     submitted_at = models.DateTimeField(auto_now_add=True)
     graded_at = models.DateTimeField(null=True, blank=True)

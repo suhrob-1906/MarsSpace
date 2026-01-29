@@ -255,6 +255,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    def get_permissions(self):
+        """Allow teachers and admins to create/update attendance"""
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'mark_attendance', 'mark_bulk']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+    
     def get_queryset(self):
         user = self.request.user
         queryset = Attendance.objects.all()

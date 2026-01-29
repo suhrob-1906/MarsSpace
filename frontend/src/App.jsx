@@ -20,6 +20,8 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import MyGroups from './pages/teacher/MyGroups';
 import AttendancePage from './pages/teacher/AttendancePage';
 
+import SchedulePage from './pages/teacher/SchedulePage';
+
 // Admin Panel Imports
 import AdminLayout from './components/layout/AdminLayout';
 import GroupManagement from './pages/admin/GroupManagement';
@@ -61,7 +63,7 @@ function App() {
             <Route index element={<TeacherDashboard />} />
             <Route path="groups" element={<MyGroups />} />
             <Route path="attendance/:groupId" element={<AttendancePage />} />
-            <Route path="schedule" element={<TeacherDashboard />} />
+            <Route path="schedule" element={<SchedulePage />} />
           </Route>
 
           {/* Admin Panel */}

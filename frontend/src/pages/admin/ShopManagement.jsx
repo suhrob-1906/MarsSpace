@@ -8,7 +8,6 @@ const ShopManagement = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -19,11 +18,10 @@ const ShopManagement = () => {
         image_url: '',
         price_coins: 10,
         stock: 999,
-        category: 'General',
         is_active: true,
     });
 
-    const categories = ['General', 'Avatar', 'Background', 'Badge', 'Power-up', 'Premium'];
+
 
     useEffect(() => {
         fetchItems();
@@ -52,7 +50,6 @@ const ShopManagement = () => {
                 image_url: '',
                 price_coins: 10,
                 stock: 999,
-                category: 'General',
                 is_active: true,
             });
             fetchItems();
@@ -95,7 +92,6 @@ const ShopManagement = () => {
             image_url: item.image_url || '',
             price_coins: item.price_coins,
             stock: item.stock,
-            category: item.category,
             is_active: item.is_active,
         });
         setShowEditModal(true);
@@ -104,8 +100,7 @@ const ShopManagement = () => {
     const filteredItems = items.filter(item => {
         const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.description?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter;
-        return matchesSearch && matchesCategory;
+        return matchesSearch;
     });
 
     return (
@@ -141,19 +136,6 @@ const ShopManagement = () => {
                             className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Filter size={20} className="text-slate-400" />
-                        <select
-                            value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                        >
-                            <option value="ALL">All Categories</option>
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -169,12 +151,7 @@ const ShopManagement = () => {
                         {items.filter(i => i.is_active).length}
                     </div>
                 </div>
-                <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-                    <div className="text-slate-400 text-sm">Categories</div>
-                    <div className="text-2xl font-bold text-blue-400 mt-1">
-                        {new Set(items.map(i => i.category)).size}
-                    </div>
-                </div>
+
                 <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
                     <div className="text-slate-400 text-sm">Total Stock</div>
                     <div className="text-2xl font-bold text-purple-400 mt-1">
@@ -217,7 +194,6 @@ const ShopManagement = () => {
                                 <div className="flex items-start justify-between mb-2">
                                     <div>
                                         <h3 className="font-bold text-white">{item.title}</h3>
-                                        <p className="text-xs text-slate-400 mt-1">{item.category}</p>
                                     </div>
                                     <div className={`px-2 py-1 rounded text-xs font-medium ${item.is_active ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'
                                         }`}>
@@ -325,18 +301,6 @@ const ShopManagement = () => {
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Category *</label>
-                                <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                                >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
-                            </div>
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
@@ -426,18 +390,6 @@ const ShopManagement = () => {
                                         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
                                     />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Category *</label>
-                                <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-red-500"
-                                >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input

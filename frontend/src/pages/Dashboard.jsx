@@ -155,7 +155,7 @@ const Dashboard = () => {
                     </div>
                 )}
 
-                <SubscriptionCard user={user} onPurchaseSuccess={handlePurchaseSuccess} />
+
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Main Hero Card */}

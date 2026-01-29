@@ -19,7 +19,7 @@ class EduverseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class EduverseVideoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EduverseVideo.objects.all()
     serializer_class = EduverseVideoSerializer
-    permission_classes = [permissions.IsAuthenticated, IsPremiumUser]
+    permission_classes = [permissions.IsAuthenticated]
 
 class BlogPostViewSet(viewsets.ModelViewSet):
     queryset = BlogPost.objects.all().order_by('-created_at')

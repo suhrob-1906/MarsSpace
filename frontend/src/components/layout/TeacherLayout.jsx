@@ -11,7 +11,7 @@ const TeacherLayout = () => {
     const navItems = [
         { path: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/teacher/groups', label: 'My Groups', icon: Users },
-        { path: '/teacher/attendance', label: 'Attendance', icon: Clock },
+        // { path: '/teacher/attendance', label: 'Attendance', icon: Clock }, // Redirect to groups for attendance
         { path: '/teacher/schedule', label: 'Schedule', icon: Calendar },
     ];
 
@@ -20,7 +20,7 @@ const TeacherLayout = () => {
             {/* Header */}
             <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 text-white p-2 rounded-lg font-bold">MS</div>
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-2 rounded-lg font-bold">MS</div>
                     <span className="text-xl font-bold text-slate-800">Teacher Panel</span>
                 </div>
 
@@ -50,8 +50,8 @@ const TeacherLayout = () => {
                                     key={item.path}
                                     to={item.path}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${isActive(item.path)
-                                            ? 'bg-blue-50 text-blue-600'
-                                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                        ? 'bg-indigo-50 text-indigo-600'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                                         }`}
                                 >
                                     <Icon size={20} />

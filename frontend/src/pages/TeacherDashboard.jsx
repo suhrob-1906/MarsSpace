@@ -102,7 +102,15 @@ const TeacherDashboard = () => {
 
                     {stats.next_lesson && (
                         <div className="mt-4">
-                            <CountdownTimer endDate={stats.next_lesson.start} />
+                            <div className="text-sm text-slate-300">
+                                {new Date(stats.next_lesson.start).toLocaleString('ru-RU', {
+                                    weekday: 'long',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </div>
                             <div className="mt-4 flex gap-2">
                                 <Link
                                     to="/teacher/attendance"

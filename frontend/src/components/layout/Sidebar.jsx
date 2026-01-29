@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, ShoppingBag, Globe, Trophy, LogOut, Code2, Tent, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, BookOpen, ShoppingBag, Globe, Trophy, LogOut, Code2, Tent, MessageSquare, Calendar } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,6 +19,7 @@ const Sidebar = () => {
 
     if (user?.role === 'TEACHER') {
         navItems.push({ name: 'Teacher Panel', path: '/teacher', icon: Tent });
+        navItems.push({ name: 'Schedule', path: '/teacher/schedule', icon: Calendar });
     }
     if (user?.role === 'ADMIN') {
         navItems.push({ name: 'Admin Panel', path: '/admin-panel', icon: Trophy });

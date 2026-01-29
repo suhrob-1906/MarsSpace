@@ -45,65 +45,64 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-surface p-8 rounded-3xl border border-slate-700/50 shadow-2xl relative overflow-hidden">
-                {/* Decorative glow */}
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-orange-300/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-red-300/10 rounded-full blur-3xl" />
 
-                <div className="relative z-10">
-                    <div className="flex justify-center mb-8">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-amber-500 flex items-center justify-center text-white shadow-glow">
-                            <Zap size={32} />
-                        </div>
+            <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-orange-100 shadow-2xl shadow-orange-500/10 relative z-10">
+
+                <div className="flex justify-center mb-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
+                        <Zap size={32} />
+                    </div>
+                </div>
+
+                <h2 className="text-3xl font-bold text-center text-slate-800 mb-2">Welcome Back!</h2>
+                <p className="text-slate-500 text-center mb-8">Enter your credentials to access MarsSpace</p>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm text-center font-medium">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label className="block text-slate-700 text-sm font-bold mb-1.5 ml-1">Username</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-medium"
+                            placeholder="e.g. martian_explorer"
+                            required
+                        />
                     </div>
 
-                    <h2 className="text-3xl font-bold text-center text-white mb-2">Welcome to Space</h2>
-                    <p className="text-slate-400 text-center mb-8">Enter your credentials to continue</p>
+                    <div>
+                        <label className="block text-slate-700 text-sm font-bold mb-1.5 ml-1">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-medium"
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
 
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm text-center">
-                            {error}
-                        </div>
-                    )}
+                    <button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 mt-4"
+                    >
+                        Sign In
+                    </button>
+                </form>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-slate-400 text-sm font-medium mb-1.5 ml-1">Username</label>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                placeholder="student1"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-slate-400 text-sm font-medium mb-1.5 ml-1">Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-primary to-amber-500 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-primary/25 hover:to-primary active:scale-[0.98] transition-all duration-200 mt-2"
-                        >
-                            Sign In
-                        </button>
-                    </form>
-
-                    <p className="text-slate-500 text-center mt-6 text-sm">
-                        Don't have an account? Ask your administrator.
-                    </p>
-                </div>
+                <p className="text-slate-400 text-center mt-8 text-sm">
+                    Don't have an account? <span className="text-orange-500 font-semibold cursor-pointer hover:underline">Contact Admin</span>
+                </p>
             </div>
         </div>
     );

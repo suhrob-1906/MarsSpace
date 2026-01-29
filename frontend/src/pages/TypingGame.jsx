@@ -119,20 +119,7 @@ const TypingGame = () => {
         }
     };
 
-    // Highlight text based on input
-    const renderText = () => {
-        return text.split('').map((char, index) => {
-            let className = 'text-slate-400';
-            if (index < input.length) {
-                if (char === input[index]) {
-                    className = 'text-green-400';
-                } else {
-                    className = 'text-red-400 bg-red-500/20';
-                }
-            }
-            return <span key={index} className={className}>{char}</span>;
-        });
-    };
+
 
     return (
         <div className="container mx-auto pt-8">
@@ -164,9 +151,42 @@ const TypingGame = () => {
 
                     <div className="card p-8 relative">
                         {/* Code Display */}
-                        <div className="font-mono text-lg bg-slate-950 p-6 rounded-xl text-left mb-6 select-none border border-slate-700 overflow-x-auto">
-                            <div className="whitespace-pre-wrap">
-                                {renderText()}
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-400 text-sm">Language:</span>
+                                <span className="text-blue-400 font-mono text-sm font-bold">Python/JS</span>
+                            </div>
+                            <button
+                                onClick={resetGame}
+                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+                                title="Restart Level"
+                            >
+                                <RefreshCw size={20} />
+                            </button>
+                        </div>
+
+                        <div className="font-mono text-lg bg-slate-950 p-6 rounded-xl text-left mb-6 select-none border border-slate-700 overflow-x-auto relative min-h-[120px]">
+                            <div className="whitespace-pre-wrap leading-relaxed tracking-wide">
+                                {text.split('').map((char, index) => {
+                                    let className = 'text-slate-500 transition-colors duration-100';
+                                    let isCurrent = index === input.length;
+
+                                    if (index < input.length) {
+                                        if (char === input[index]) {
+                                            className = 'text-emerald-400';
+                                        } else {
+                                            className = 'text-red-400 bg-red-900/30';
+                                        }
+                                    } else if (isCurrent) {
+                                        className = 'bg-blue-500/30 text-blue-200 outline outline-1 outline-blue-500 rounded-sm';
+                                    }
+
+                                    return (
+                                        <span key={index} className={className}>
+                                            {char === '\n' ? '↵\n' : char}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
 

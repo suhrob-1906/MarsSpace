@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Video, FileText, Globe, Heart, Share2 } from 'lucide-react';
+import { Video, FileText, Globe, Heart, Share2, Lock } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import SubscriptionModal from '../components/modals/SubscriptionModal';
 
 const Eduverse = () => {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('videos');
     const [categories, setCategories] = useState([]);
     const [videos, setVideos] = useState([]);
     const [blogPosts, setBlogPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showSubscription, setShowSubscription] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -60,8 +64,8 @@ const Eduverse = () => {
                 <button
                     onClick={() => setActiveTab('videos')}
                     className={`pb-3 px-4 text-sm font-medium transition-all relative ${activeTab === 'videos'
-                            ? 'text-white'
-                            : 'text-slate-400 hover:text-slate-200'
+                        ? 'text-white'
+                        : 'text-slate-400 hover:text-slate-200'
                         }`}
                 >
                     <span className="flex items-center gap-2">
@@ -75,8 +79,8 @@ const Eduverse = () => {
                 <button
                     onClick={() => setActiveTab('blog')}
                     className={`pb-3 px-4 text-sm font-medium transition-all relative ${activeTab === 'blog'
-                            ? 'text-white'
-                            : 'text-slate-400 hover:text-slate-200'
+                        ? 'text-white'
+                        : 'text-slate-400 hover:text-slate-200'
                         }`}
                 >
                     <span className="flex items-center gap-2">
@@ -111,41 +115,70 @@ const Eduverse = () => {
                                             </h2>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {categoryVideos.map(video => (
-                                                <div key={video.id} className="group bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:bg-slate-800 transition-all hover:scale-[1.02] duration-300 shadow-lg">
-                                                    <div className="aspect-video bg-slate-900 relative">
-                                                        {video.banner_url ? (
-                                                            <img
-                                                                src={video.banner_url}
-                                                                alt={video.title}
-                                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-600">
-                                                                <Video size={48} />
+                                            {categoryVideos.map(video => {
+                                                const isLocked = video.is_premium && !user?.has_premium;
+
+                                                return (
+                                                    <div key={video.id} className="group bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:bg-slate-800 transition-all hover:scale-[1.02] duration-300 shadow-lg relative">
+                                                        {isLocked && (
+                                                            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+                                                                <div className="p-4 bg-slate-800 rounded-full mb-3 shadow-lg shadow-amber-500/20">
+                                                                    <Lock className="text-amber-500" size={32} />
+                                                                </div>
+                                                                <div className="text-center px-6">
+                                                                    <h4 className="text-white font-bold mb-1">Premium Content</h4>
+                                                                    <button
+                                                                        onClick={() => setShowSubscription(true)}
+                                                                        className="mt-2 text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 transition-all"
+                                                                    >
+                                                                        Unlock Access
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         )}
-                                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                                                                <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
-                                                            </div>
+
+                                                        <div className="aspect-video bg-slate-900 relative">
+                                                            {video.banner_url ? (
+                                                                <img
+                                                                    src={video.banner_url}
+                                                                    alt={video.title}
+                                                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                                    <Video size={48} />
+                                                                </div>
+                                                            )}
+                                                            {!isLocked && (
+                                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                                                                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                                                                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="p-4">
+                                                            <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 leading-snug">
+                                                                {video.title}
+                                                            </h3>
+                                                            {isLocked ? (
+                                                                <div className="flex items-center gap-2 text-amber-500 text-sm font-medium">
+                                                                    <Lock size={14} /> Premium only
+                                                                </div>
+                                                            ) : (
+                                                                <a
+                                                                    href={video.video_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium"
+                                                                >
+                                                                    Watch Now <Share2 size={14} />
+                                                                </a>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div className="p-4">
-                                                        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 leading-snug">
-                                                            {video.title}
-                                                        </h3>
-                                                        <a
-                                                            href={video.video_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium"
-                                                        >
-                                                            Watch Now <Share2 size={14} />
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 );
@@ -201,6 +234,10 @@ const Eduverse = () => {
                         </div>
                     )}
                 </div>
+            )}
+
+            {showSubscription && (
+                <SubscriptionModal onClose={() => setShowSubscription(false)} />
             )}
         </div>
     );

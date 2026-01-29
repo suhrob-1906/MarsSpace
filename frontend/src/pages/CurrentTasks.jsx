@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, AlertCircle, Upload, X, FileText } from 'lucide-react';
 import api from '../services/api';
+import { toast } from 'react-hot-toast';
 
 const CurrentTasks = () => {
     const [tasks, setTasks] = useState([]);
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Submission Modal State
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [submissionText, setSubmissionText] = useState('');
+    const [submissionFile, setSubmissionFile] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -22,6 +29,7 @@ const CurrentTasks = () => {
             setSubmissions(subsRes.data);
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
+            toast.error('Failed to load tasks');
         } finally {
             setLoading(false);
         }
@@ -31,11 +39,47 @@ const CurrentTasks = () => {
         const sub = submissions.find(s => s.homework === taskId);
         if (!sub) return 'pending';
         if (sub.graded_at) return 'graded';
-        return 'submitted'; // Submitted but not graded
+        return 'submitted';
     };
 
     const isOverdue = (dueDate) => {
         return new Date(dueDate) < new Date();
+    };
+
+    const handleOpenSubmit = (task) => {
+        setSelectedTask(task);
+        setSubmissionText('');
+        setSubmissionFile(null);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!submissionText && !submissionFile) {
+            toast.error('Please add text or a file');
+            return;
+        }
+
+        setSubmitting(true);
+        const formData = new FormData();
+        formData.append('homework', selectedTask.id);
+        formData.append('content', submissionText);
+        if (submissionFile) {
+            formData.append('file_url', submissionFile);
+        }
+
+        try {
+            await api.post('/homework-submissions/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success('Homework submitted successfully! 🚀');
+            setSelectedTask(null);
+            fetchData(); // Refresh data
+        } catch (error) {
+            console.error('Submission failed:', error);
+            toast.error(error.response?.data?.error || 'Failed to submit homework');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -97,10 +141,8 @@ const CurrentTasks = () => {
                                             <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
                                                 <div className="flex items-center gap-1.5">
                                                     <Clock size={14} />
-                                                    Due: {new Date(task.due_date).toLocaleDateString()} {new Date(task.due_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    Due: {new Date(task.due_date).toLocaleDateString()}
                                                 </div>
-                                                <div className="w-1 h-1 rounded-full bg-slate-600"></div>
-                                                <div>Category: {task.category_name}</div>
                                                 <div className="w-1 h-1 rounded-full bg-slate-600"></div>
                                                 <div>Max Points: {task.max_points}</div>
                                             </div>
@@ -115,12 +157,15 @@ const CurrentTasks = () => {
 
                                         <div className="flex flex-col gap-2 min-w-[140px]">
                                             {status === 'pending' && (
-                                                <button className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors text-sm">
-                                                    Submit Task
+                                                <button
+                                                    onClick={() => handleOpenSubmit(task)}
+                                                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                                                >
+                                                    <Upload size={16} /> Submit Task
                                                 </button>
                                             )}
                                             {status !== 'pending' && (
-                                                <button className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm">
+                                                <button className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm cursor-default">
                                                     View Submission
                                                 </button>
                                             )}
@@ -130,6 +175,59 @@ const CurrentTasks = () => {
                             );
                         })
                     )}
+                </div>
+            )}
+
+            {/* Submit Modal */}
+            {selectedTask && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedTask(null)}>
+                    <div className="bg-slate-800 rounded-xl p-6 w-full max-w-lg border border-slate-700" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-white">Submit Homework</h3>
+                            <button onClick={() => setSelectedTask(null)} className="text-slate-400 hover:text-white">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Your Answer</label>
+                                <textarea
+                                    value={submissionText}
+                                    onChange={e => setSubmissionText(e.target.value)}
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white h-32 focus:ring-2 focus:ring-emerald-500 outline-none"
+                                    placeholder="Type your answer here..."
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Attach File (Optional)</label>
+                                <div className="border-2 border-dashed border-slate-700 rounded-lg p-4 text-center hover:border-slate-500 transition-colors cursor-pointer bg-slate-900/50 relative">
+                                    <input
+                                        type="file"
+                                        onChange={e => setSubmissionFile(e.target.files[0])}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                    <div className="flex flex-col items-center gap-2 text-slate-400">
+                                        <FileText size={24} />
+                                        <span className="text-sm">
+                                            {submissionFile ? submissionFile.name : "Click to upload file (ZIP, PDF, images)"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className={`w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg font-bold transition-colors ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    {submitting ? 'Submitting...' : 'Submit Homework'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
