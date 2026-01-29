@@ -19,6 +19,10 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Fetch user data first to trigger activity update
+                const userRes = await api.get('/me/');
+                setUser(userRes.data);
+
                 const [progressRes, leaderboardRes, groupsRes] = await Promise.all([
                     api.get('/my-progress/'),
                     api.get('/leaderboard/'),
@@ -37,6 +41,7 @@ const Dashboard = () => {
             }
         };
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handlePurchaseSuccess = (data) => {
