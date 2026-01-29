@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-// import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
-import { Users, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Users, Calendar, Clock, ChevronRight, Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const MyGroups = () => {
-    // const { t } = useTranslation();
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [awardingCoins, setAwardingCoins] = useState(null);
 
     useEffect(() => {
         fetchGroups();
@@ -21,6 +20,31 @@ const MyGroups = () => {
             console.error("Failed to fetch groups", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAwardCoins = async (groupId) => {
+        const studentId = prompt("Enter student ID:");
+        if (!studentId) return;
+
+        const amount = prompt("Enter coin amount to award:");
+        if (!amount || isNaN(amount)) {
+            alert("Invalid amount");
+            return;
+        }
+
+        setAwardingCoins(groupId);
+        try {
+            await api.post('/teacher/award-coins/', {
+                student_id: parseInt(studentId),
+                amount: parseInt(amount),
+                group_id: groupId
+            });
+            alert(`Successfully awarded ${amount} coins!`);
+        } catch (error) {
+            alert(error.response?.data?.error || "Failed to award coins");
+        } finally {
+            setAwardingCoins(null);
         }
     };
 
@@ -59,13 +83,21 @@ const MyGroups = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2">
                                 <Link
                                     to={`/teacher/attendance/${group.id}`}
-                                    className="flex-1 btn bg-blue-600 text-white hover:bg-blue-700 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                                    className="btn bg-blue-600 text-white hover:bg-blue-700 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
                                 >
                                     Mark Attendance <ChevronRight size={16} />
                                 </Link>
+                                <button
+                                    onClick={() => handleAwardCoins(group.id)}
+                                    disabled={awardingCoins === group.id}
+                                    className="btn bg-amber-500 text-white hover:bg-amber-600 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    <Coins size={16} />
+                                    {awardingCoins === group.id ? 'Awarding...' : 'Award Coins'}
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -74,7 +106,7 @@ const MyGroups = () => {
                 <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
                     <Users className="mx-auto h-12 w-12 text-slate-400 mb-4" />
                     <h3 className="text-lg font-medium text-slate-900">No groups assigned</h3>
-                    <p className="text-slate-500">You haven't been assigned to any study groups call an admin.</p>
+                    <p className="text-slate-500">You haven't been assigned to any study groups yet.</p>
                 </div>
             )}
         </div>

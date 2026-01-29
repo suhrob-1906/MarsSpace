@@ -4,7 +4,7 @@ from .views import (
     MeView, UserViewSet, StudyGroupViewSet,
     SubscriptionPurchaseView, SubscriptionStatusView,
     AIChatView, AttendanceViewSet, AdminStatsViewSet,
-    TeacherStatsViewSet
+    TeacherStatsViewSet, TeacherAwardCoinsView
 )
 
 router = DefaultRouter()
@@ -20,5 +20,6 @@ urlpatterns = [
     path('subscription/purchase/', SubscriptionPurchaseView.as_view(), name='subscription-purchase'),
     path('subscription/status/', SubscriptionStatusView.as_view(), name='subscription-status'),
     path('ai-chat/', AIChatView.as_view(), name='ai-chat'),
+    path('teacher/award-coins/', TeacherAwardCoinsView.as_view(), name='teacher-award-coins'),
     path('', include(router.urls)),
 ]

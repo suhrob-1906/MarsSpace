@@ -369,3 +369,74 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'message': f'Attendance marked for {created_count} students',
             'count': created_count
         })
+
+class TeacherAwardCoinsView(APIView):
+    """Allow teachers to award coins to students"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        if request.user.role != 'TEACHER':
+            return Response(
+                {'error': 'Only teachers can award coins'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        student_id = request.data.get('student_id')
+        amount = request.data.get('amount')
+        group_id = request.data.get('group_id')
+        
+        if not all([student_id, amount, group_id]):
+            return Response(
+                {'error': 'student_id, amount, and group_id are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            amount = int(amount)
+            if amount <= 0:
+                return Response(
+                    {'error': 'Amount must be positive'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid amount'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify teacher has access to this group
+        try:
+            group = StudyGroup.objects.get(id=group_id)
+            if group.teacher != request.user and request.user not in group.teachers.all():
+                return Response(
+                    {'error': 'You do not have access to this group'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except StudyGroup.DoesNotExist:
+            return Response(
+                {'error': 'Group not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Verify student exists and is in the group
+        try:
+            student = User.objects.get(id=student_id)
+            if group not in student.learning_groups.all():
+                return Response(
+                    {'error': 'Student is not in this group'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Student not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Award coins
+        student.coins += amount
+        student.save()
+        
+        return Response({
+            'message': f'Successfully awarded {amount} coins to {student.username}',
+            'student_coins': student.coins
+        })

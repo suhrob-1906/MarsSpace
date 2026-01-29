@@ -11,7 +11,6 @@ const TeacherLayout = () => {
     const navItems = [
         { path: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/teacher/groups', label: 'My Groups', icon: Users },
-        { path: '/teacher/groups', label: 'Attendance', icon: Clock },
         { path: '/teacher/schedule', label: 'Schedule', icon: Calendar },
     ];
 
@@ -41,7 +40,7 @@ const TeacherLayout = () => {
 
             <div className="flex flex-1">
                 {/* Sidebar */}
-                <aside className="w-64 bg-white border-r border-slate-200 hidden md:block">
+                <aside className="w-64 bg-white border-r border-slate-200 shadow-lg hidden md:block">
                     <nav className="p-4 space-y-1">
                         {navItems.map((item) => {
                             const Icon = item.icon;

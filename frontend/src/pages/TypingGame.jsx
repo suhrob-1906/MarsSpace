@@ -1,116 +1,132 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import { Timer, RefreshCw, Trophy, Coins } from 'lucide-react';
+import { Timer, RefreshCw, Trophy, Coins, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Leaderboard from '../components/game/Leaderboard';
 
-const TEXT_SAMPLES = [
-    "def hello_world(): print('Hello from space')",
-    "import django\nfrom django.db import models\nfrom django.contrib.auth.models import User",
-    "const [user, setUser] = useState(null);\nuseEffect(() => { fetchUser(); }, []);",
-    "class SpaceShip:\n    def __init__(self, name):\n        self.name = name\n    def launch(self):\n        print(f'{self.name} launched!')",
-    "function calculateScore(wpm, accuracy) {\n    return Math.round(wpm * (accuracy / 100));\n}",
-    "SELECT * FROM users WHERE role = 'STUDENT' ORDER BY created_at DESC;",
-    "async def get_user_data(user_id):\n    user = await User.objects.get(id=user_id)\n    return user.serialize()"
+// Word dictionaries
+const RUSSIAN_WORDS = [
+    'программа', 'компьютер', 'разработка', 'алгоритм', 'функция', 'переменная', 'массив', 'объект',
+    'класс', 'метод', 'интерфейс', 'наследование', 'инкапсуляция', 'полиморфизм', 'абстракция',
+    'данные', 'структура', 'база', 'запрос', 'сервер', 'клиент', 'протокол', 'сеть', 'интернет',
+    'браузер', 'приложение', 'система', 'операция', 'процесс', 'память', 'процессор', 'устройство',
+    'файл', 'папка', 'документ', 'текст', 'код', 'скрипт', 'библиотека', 'фреймворк', 'модуль',
+    'пакет', 'версия', 'обновление', 'установка', 'настройка', 'конфигурация', 'параметр', 'опция',
+    'команда', 'терминал', 'консоль', 'вывод', 'ввод', 'ошибка', 'исключение', 'отладка', 'тест',
+    'проверка', 'валидация', 'безопасность', 'шифрование', 'аутентификация', 'авторизация', 'токен',
+    'сессия', 'куки', 'кеш', 'хранилище', 'репозиторий', 'ветка', 'коммит', 'слияние', 'конфликт',
+    'развертывание', 'продакшн', 'разработка', 'тестирование', 'интеграция', 'доставка', 'релиз'
+];
+
+const ENGLISH_WORDS = [
+    'program', 'computer', 'development', 'algorithm', 'function', 'variable', 'array', 'object',
+    'class', 'method', 'interface', 'inheritance', 'encapsulation', 'polymorphism', 'abstraction',
+    'data', 'structure', 'database', 'query', 'server', 'client', 'protocol', 'network', 'internet',
+    'browser', 'application', 'system', 'operation', 'process', 'memory', 'processor', 'device',
+    'file', 'folder', 'document', 'text', 'code', 'script', 'library', 'framework', 'module',
+    'package', 'version', 'update', 'install', 'configuration', 'parameter', 'option', 'setting',
+    'command', 'terminal', 'console', 'output', 'input', 'error', 'exception', 'debug', 'test',
+    'validation', 'security', 'encryption', 'authentication', 'authorization', 'token', 'session',
+    'cookie', 'cache', 'storage', 'repository', 'branch', 'commit', 'merge', 'conflict', 'deploy',
+    'production', 'development', 'testing', 'integration', 'delivery', 'release', 'performance'
 ];
 
 const TypingGame = () => {
-    const { refreshUser } = useAuth();
-    const [text, setText] = useState("");
-    const [input, setInput] = useState("");
-    const startTimeRef = useRef(null);
-    const [wpm, setWpm] = useState(0);
-    const [accuracy, setAccuracy] = useState(0);
-    const [completed, setCompleted] = useState(false);
-    const [coinsEarned, setCoinsEarned] = useState(0);
-    const [errors, setErrors] = useState(0);
-
+    const { user, refreshUser } = useAuth();
+    const [language, setLanguage] = useState('english');
+    const [duration, setDuration] = useState(30);
+    const [words, setWords] = useState([]);
+    const [currentWordIndex, setCurrentWordIndex] = useState(0);
+    const [input, setInput] = useState('');
+    const [timeLeft, setTimeLeft] = useState(duration);
     const [gameStarted, setGameStarted] = useState(false);
+    const [gameFinished, setGameFinished] = useState(false);
+    const [correctWords, setCorrectWords] = useState(0);
+    const [incorrectWords, setIncorrectWords] = useState(0);
+    const [wpm, setWpm] = useState(0);
+    const [accuracy, setAccuracy] = useState(100);
+    const [coinsEarned, setCoinsEarned] = useState(0);
+    const [bestWpm, setBestWpm] = useState(user?.last_wpm || 0);
+
+    const timerRef = useRef(null);
+    const startTimeRef = useRef(null);
+
+    // Generate random words
+    const generateWords = () => {
+        const wordList = language === 'russian' ? RUSSIAN_WORDS : ENGLISH_WORDS;
+        const randomWords = [];
+        for (let i = 0; i < 100; i++) {
+            randomWords.push(wordList[Math.floor(Math.random() * wordList.length)]);
+        }
+        return randomWords;
+    };
 
     const resetGame = () => {
-        const randomText = TEXT_SAMPLES[Math.floor(Math.random() * TEXT_SAMPLES.length)];
-        setText(randomText);
-        setInput("");
-        startTimeRef.current = null;
-        setWpm(0);
-        setAccuracy(0);
-        setCompleted(false);
-        setCoinsEarned(0);
-        setErrors(0);
+        setWords(generateWords());
+        setCurrentWordIndex(0);
+        setInput('');
+        setTimeLeft(duration);
         setGameStarted(false);
+        setGameFinished(false);
+        setCorrectWords(0);
+        setIncorrectWords(0);
+        setWpm(0);
+        setAccuracy(100);
+        setCoinsEarned(0);
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         resetGame();
-    }, []);
+    }, [language, duration]);
 
-    const calculateAccuracy = (original, typed) => {
-        let correct = 0;
-        let total = Math.max(original.length, typed.length);
-        for (let i = 0; i < Math.min(original.length, typed.length); i++) {
-            if (original[i] === typed[i]) {
-                correct++;
-            }
-        }
-        return total > 0 ? Math.round((correct / total) * 100) : 0;
+    const startGame = () => {
+        setGameStarted(true);
+        startTimeRef.current = Date.now();
+
+        timerRef.current = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    endGame();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
     };
 
-    useEffect(() => {
-        if (input.length === 1 && !startTimeRef.current) {
-            startTimeRef.current = performance.now();
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setGameStarted(true);
+    const endGame = async () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
         }
-    }, [input]);
+        setGameFinished(true);
 
-    const handleChange = (e) => {
-        const val = e.target.value;
-        setInput(val);
-
-        // Calculate errors
-        let errorCount = 0;
-        for (let i = 0; i < Math.min(text.length, val.length); i++) {
-            if (text[i] !== val[i]) {
-                errorCount++;
-            }
-        }
-        setErrors(errorCount);
-
-        // Calculate accuracy
-        const acc = calculateAccuracy(text, val);
-        setAccuracy(acc);
-
-        if (val === text) {
-            handleComplete();
-        }
-    };
-
-    const handleComplete = async () => {
-        const endTime = performance.now();
-        const minutes = (endTime - startTimeRef.current) / 60000;
-        const words = text.split(/\s+/).filter(w => w.length > 0).length;
-        const calculatedWpm = minutes > 0 ? Math.round(words / minutes) : 0;
-        const finalAccuracy = calculateAccuracy(text, input);
+        const totalWords = correctWords + incorrectWords;
+        const calculatedWpm = Math.round((correctWords / duration) * 60);
+        const calculatedAccuracy = totalWords > 0 ? Math.round((correctWords / totalWords) * 100) : 100;
 
         setWpm(calculatedWpm);
-        setAccuracy(finalAccuracy);
-        setCompleted(true);
+        setAccuracy(calculatedAccuracy);
 
-        // Submit score
+        // Update best WPM
+        if (calculatedWpm > bestWpm) {
+            setBestWpm(calculatedWpm);
+        }
+
+        // Submit score to backend
         try {
             const response = await api.post('/typing/', {
                 wpm: calculatedWpm,
-                accuracy: finalAccuracy,
-                score: Math.round(calculatedWpm * (finalAccuracy / 100))
+                accuracy: calculatedAccuracy,
+                score: Math.round(calculatedWpm * (calculatedAccuracy / 100))
             });
 
-            // Update coins and energy from response
             if (response.data.coins_reward) {
                 setCoinsEarned(response.data.coins_reward);
             }
 
-            // Refresh user data to update wallet
             if (refreshUser) {
                 await refreshUser();
             }
@@ -119,129 +135,252 @@ const TypingGame = () => {
         }
     };
 
+    const handleInputChange = (e) => {
+        if (!gameStarted) {
+            startGame();
+        }
 
+        const value = e.target.value;
+        setInput(value);
+
+        // Check if word is complete (space pressed)
+        if (value.endsWith(' ')) {
+            const typedWord = value.trim();
+            const currentWord = words[currentWordIndex];
+
+            if (typedWord === currentWord) {
+                setCorrectWords(prev => prev + 1);
+            } else {
+                setIncorrectWords(prev => prev + 1);
+            }
+
+            setCurrentWordIndex(prev => prev + 1);
+            setInput('');
+        }
+    };
+
+    const getCurrentWordStatus = () => {
+        const currentWord = words[currentWordIndex];
+        if (!currentWord) return [];
+
+        return currentWord.split('').map((char, idx) => {
+            if (idx < input.length) {
+                return {
+                    char,
+                    status: input[idx] === char ? 'correct' : 'incorrect'
+                };
+            }
+            return { char, status: 'pending' };
+        });
+    };
 
     return (
-        <div className="container mx-auto pt-8">
+        <div className="container mx-auto pt-8 px-4">
             <div className="flex flex-col lg:flex-row gap-8">
                 {/* Game Area */}
-                <div className="flex-1 space-y-8">
+                <div className="flex-1 space-y-6">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold text-white mb-2">Code Typing Trainer</h1>
-                        <p className="text-slate-400">Type the code exactly as shown to earn coins and energy.</p>
+                        <h1 className="text-4xl font-bold text-slate-800 mb-2">Typing Speed Test</h1>
+                        <p className="text-slate-500">Test your typing speed and accuracy</p>
                     </div>
 
-                    {/* Stats Bar */}
-                    {!completed && gameStarted && (
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="card text-center p-4">
-                                <div className="text-2xl font-bold text-primary">{wpm || 0}</div>
-                                <div className="text-xs text-slate-400 uppercase tracking-wider">WPM</div>
-                            </div>
-                            <div className="card text-center p-4">
-                                <div className="text-2xl font-bold text-green-400">{accuracy}%</div>
-                                <div className="text-xs text-slate-400 uppercase tracking-wider">Accuracy</div>
-                            </div>
-                            <div className="card text-center p-4">
-                                <div className="text-2xl font-bold text-red-400">{errors}</div>
-                                <div className="text-xs text-slate-400 uppercase tracking-wider">Errors</div>
+                    {/* Settings */}
+                    {!gameStarted && !gameFinished && (
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                            <h3 className="font-bold text-slate-800 mb-4">Settings</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Language Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        <Globe className="inline mr-2" size={16} />
+                                        Language
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setLanguage('english')}
+                                            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${language === 'english'
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            English
+                                        </button>
+                                        <button
+                                            onClick={() => setLanguage('russian')}
+                                            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${language === 'russian'
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            Русский
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Duration Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        <Timer className="inline mr-2" size={16} />
+                                        Duration
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setDuration(15)}
+                                            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${duration === 15
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            15s
+                                        </button>
+                                        <button
+                                            onClick={() => setDuration(30)}
+                                            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${duration === 30
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            30s
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="card p-8 relative">
-                        {/* Code Display */}
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-slate-400 text-sm">Language:</span>
-                                <span className="text-blue-400 font-mono text-sm font-bold">Python/JS</span>
+                    {/* Stats Bar */}
+                    {gameStarted && !gameFinished && (
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
+                                <div className="text-3xl font-bold text-orange-600">{timeLeft}s</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Time Left</div>
                             </div>
-                            <button
-                                onClick={resetGame}
-                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
-                                title="Restart Level"
-                            >
-                                <RefreshCw size={20} />
-                            </button>
-                        </div>
-
-                        <div className="font-mono text-lg bg-slate-950 p-6 rounded-xl text-left mb-6 select-none border border-slate-700 overflow-x-auto relative min-h-[120px]">
-                            <div className="whitespace-pre-wrap leading-relaxed tracking-wide">
-                                {text.split('').map((char, index) => {
-                                    let className = 'text-slate-500 transition-colors duration-100';
-                                    let isCurrent = index === input.length;
-
-                                    if (index < input.length) {
-                                        if (char === input[index]) {
-                                            className = 'text-emerald-400';
-                                        } else {
-                                            className = 'text-red-400 bg-red-900/30';
-                                        }
-                                    } else if (isCurrent) {
-                                        className = 'bg-blue-500/30 text-blue-200 outline outline-1 outline-blue-500 rounded-sm';
-                                    }
-
-                                    return (
-                                        <span key={index} className={className}>
-                                            {char === '\n' ? '↵\n' : char}
-                                        </span>
-                                    );
-                                })}
+                            <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
+                                <div className="text-3xl font-bold text-blue-600">{correctWords}</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Words</div>
                             </div>
-                        </div>
-
-                        {!completed ? (
-                            <>
-                                <textarea
-                                    value={input}
-                                    onChange={handleChange}
-                                    className="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-4 font-mono text-lg text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-32 resize-none"
-                                    placeholder="Start typing here..."
-                                    spellCheck="false"
-                                    autoFocus
-                                />
-                                <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 text-sm">
-                                    <Timer size={16} />
-                                    <span>Timer starts on first keypress</span>
+                            <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
+                                <div className="text-3xl font-bold text-green-600">
+                                    {Math.round((correctWords / (duration - timeLeft || 1)) * 60)}
                                 </div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">WPM</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
+                                <div className="text-3xl font-bold text-purple-600">
+                                    {correctWords + incorrectWords > 0
+                                        ? Math.round((correctWords / (correctWords + incorrectWords)) * 100)
+                                        : 100}%
+                                </div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Accuracy</div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Game Area */}
+                    <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+                        {!gameFinished ? (
+                            <>
+                                {/* Words Display */}
+                                <div className="mb-6 min-h-[120px] flex flex-wrap gap-2 text-2xl font-mono">
+                                    {words.slice(currentWordIndex, currentWordIndex + 15).map((word, idx) => (
+                                        <span
+                                            key={idx}
+                                            className={`${idx === 0
+                                                    ? 'text-slate-800 font-bold'
+                                                    : 'text-slate-400'
+                                                }`}
+                                        >
+                                            {idx === 0 ? (
+                                                getCurrentWordStatus().map((item, charIdx) => (
+                                                    <span
+                                                        key={charIdx}
+                                                        className={
+                                                            item.status === 'correct'
+                                                                ? 'text-green-600'
+                                                                : item.status === 'incorrect'
+                                                                    ? 'text-red-600 bg-red-100'
+                                                                    : 'text-slate-800'
+                                                        }
+                                                    >
+                                                        {item.char}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                word
+                                            )}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* Input */}
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-4 text-xl font-mono outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                                    placeholder={gameStarted ? "Type here..." : "Click here to start typing..."}
+                                    autoFocus
+                                    disabled={gameFinished}
+                                />
+
+                                <button
+                                    onClick={resetGame}
+                                    className="mt-4 flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all"
+                                >
+                                    <RefreshCw size={20} />
+                                    Restart
+                                </button>
                             </>
                         ) : (
-                            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-8 animate-in zoom-in duration-300">
-                                <div className="text-center space-y-4">
-                                    <div className="flex items-center justify-center gap-2 text-green-300 mb-4">
-                                        <Trophy size={32} />
-                                        <span className="text-2xl font-bold">Great job!</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 mb-6">
-                                        <div className="bg-slate-900/50 rounded-xl p-4">
-                                            <div className="text-3xl font-bold text-white mb-1">{wpm}</div>
-                                            <div className="text-sm text-slate-400">Words Per Minute</div>
-                                        </div>
-                                        <div className="bg-slate-900/50 rounded-xl p-4">
-                                            <div className="text-3xl font-bold text-green-400 mb-1">{accuracy}%</div>
-                                            <div className="text-sm text-slate-400">Accuracy</div>
-                                        </div>
-                                    </div>
-
-                                    {coinsEarned > 0 && (
-                                        <div className="bg-slate-900/50 rounded-xl p-4 mb-6">
-                                            <div className="text-lg font-bold text-white mb-2">Rewards Earned</div>
-                                            <div className="flex items-center justify-center gap-6">
-                                                <div className="flex items-center gap-2 text-amber-400">
-                                                    <Coins size={20} />
-                                                    <span className="font-bold">+{coinsEarned} Coins</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <button onClick={resetGame} className="btn btn-primary mx-auto">
-                                        <RefreshCw size={20} /> Play Again
-                                    </button>
+                            <div className="text-center space-y-6">
+                                <div className="flex items-center justify-center gap-2 text-green-600 mb-4">
+                                    <Trophy size={48} />
                                 </div>
+                                <h2 className="text-3xl font-bold text-slate-800">Great Job!</h2>
+
+                                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                        <div className="text-4xl font-bold text-blue-600 mb-2">{wpm}</div>
+                                        <div className="text-sm text-slate-600">Words Per Minute</div>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                        <div className="text-4xl font-bold text-green-600 mb-2">{accuracy}%</div>
+                                        <div className="text-sm text-slate-600">Accuracy</div>
+                                    </div>
+                                </div>
+
+                                {coinsEarned > 0 && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 max-w-md mx-auto">
+                                        <div className="flex items-center justify-center gap-2 text-amber-600">
+                                            <Coins size={24} />
+                                            <span className="text-xl font-bold">+{coinsEarned} Coins Earned!</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={resetGame}
+                                    className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-bold transition-all inline-flex items-center gap-2"
+                                >
+                                    <RefreshCw size={20} />
+                                    Play Again
+                                </button>
                             </div>
                         )}
+                    </div>
+
+                    {/* Best Score */}
+                    <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold mb-1">Your Best Score</h3>
+                                <p className="text-white/80 text-sm">Keep practicing to improve!</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-4xl font-black">{bestWpm}</div>
+                                <div className="text-sm text-white/80">WPM</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
