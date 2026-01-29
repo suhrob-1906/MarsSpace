@@ -11,7 +11,7 @@ const TeacherLayout = () => {
     const navItems = [
         { path: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/teacher/groups', label: 'My Groups', icon: Users },
-        // { path: '/teacher/attendance', label: 'Attendance', icon: Clock }, // Redirect to groups for attendance
+        { path: '/teacher/groups', label: 'Attendance', icon: Clock },
         { path: '/teacher/schedule', label: 'Schedule', icon: Calendar },
     ];
 
