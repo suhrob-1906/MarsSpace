@@ -55,26 +55,25 @@ const TeacherDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 {/* Total Students */}
-                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <Users className="text-indigo-600" size={24} />
+                <div className="bg-white rounded-2xl p-6 border border-blue-100 shadow-lg shadow-blue-500/5 hover:scale-105 transition-all">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                            <Users className="text-blue-500" size={24} />
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-slate-800">{stats.total_students}</div>
+                            <div className="text-3xl font-bold text-slate-800">{stats?.total_students || 0}</div>
                             <div className="text-sm text-slate-500">Total Students</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Active Groups */}
-                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                            <BookOpen className="text-purple-600" size={24} />
+                <div className="bg-white rounded-2xl p-6 border border-green-100 shadow-lg shadow-green-500/5 hover:scale-105 transition-all">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+                            <Target className="text-green-500" size={24} />
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-slate-800">{stats.active_groups}</div>
+                            <div className="text-3xl font-bold text-slate-800">{stats?.active_groups || 0}</div>
                             <div className="text-sm text-slate-500">Active Groups</div>
                         </div>
                     </div>

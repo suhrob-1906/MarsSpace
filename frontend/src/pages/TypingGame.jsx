@@ -51,11 +51,11 @@ const TypingGame = () => {
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
 
-    // Generate random words
+    // Generate random words (infinite)
     const generateWords = () => {
         const wordList = language === 'russian' ? RUSSIAN_WORDS : ENGLISH_WORDS;
         const randomWords = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 200; i++) { // Generate 200 words for infinite scrolling
             randomWords.push(wordList[Math.floor(Math.random() * wordList.length)]);
         }
         return randomWords;
@@ -141,9 +141,8 @@ const TypingGame = () => {
         }
 
         const value = e.target.value;
-        setInput(value);
 
-        // Check if word is complete (space pressed)
+        // Check if space was pressed (word completed)
         if (value.endsWith(' ')) {
             const typedWord = value.trim();
             const currentWord = words[currentWordIndex];
@@ -154,8 +153,16 @@ const TypingGame = () => {
                 setIncorrectWords(prev => prev + 1);
             }
 
+            // Move to next word and clear input
             setCurrentWordIndex(prev => prev + 1);
             setInput('');
+
+            // Generate more words if running low
+            if (currentWordIndex > words.length - 50) {
+                setWords(prev => [...prev, ...generateWords()]);
+            }
+        } else {
+            setInput(value);
         }
     };
 
@@ -173,6 +180,16 @@ const TypingGame = () => {
             return { char, status: 'pending' };
         });
     };
+
+    // Calculate real-time WPM
+    const currentWpm = gameStarted && !gameFinished && timeLeft < duration
+        ? Math.round((correctWords / (duration - timeLeft || 1)) * 60)
+        : 0;
+
+    // Calculate real-time accuracy
+    const currentAccuracy = gameStarted && !gameFinished && (correctWords + incorrectWords) > 0
+        ? Math.round((correctWords / (correctWords + incorrectWords)) * 100)
+        : 100;
 
     return (
         <div className="container mx-auto pt-8 px-4">
@@ -260,17 +277,11 @@ const TypingGame = () => {
                                 <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Words</div>
                             </div>
                             <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
-                                <div className="text-3xl font-bold text-green-600">
-                                    {Math.round((correctWords / (duration - timeLeft || 1)) * 60)}
-                                </div>
+                                <div className="text-3xl font-bold text-green-600">{currentWpm}</div>
                                 <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">WPM</div>
                             </div>
                             <div className="bg-white rounded-xl p-4 border border-slate-200 text-center shadow-sm">
-                                <div className="text-3xl font-bold text-purple-600">
-                                    {correctWords + incorrectWords > 0
-                                        ? Math.round((correctWords / (correctWords + incorrectWords)) * 100)
-                                        : 100}%
-                                </div>
+                                <div className="text-3xl font-bold text-purple-600">{currentAccuracy}%</div>
                                 <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Accuracy</div>
                             </div>
                         </div>

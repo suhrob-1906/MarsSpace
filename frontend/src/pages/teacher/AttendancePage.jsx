@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
-import { Calendar, Save, ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Coins } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AttendancePage = () => {
-    // const { t } = useTranslation();
     const { groupId } = useParams();
     const navigate = useNavigate();
 
@@ -14,20 +12,18 @@ const AttendancePage = () => {
     const [students, setStudents] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [attendanceMap, setAttendanceMap] = useState({}); // { studentId: boolean }
+    const [coinInputs, setCoinInputs] = useState({}); // { studentId: amount }
     const [loading, setLoading] = useState(true);
-    // const [saving, setSaving] = useState(false);
     const [canMark, setCanMark] = useState(false);
 
     useEffect(() => {
         fetchGroupAndStudents();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupId]);
 
     useEffect(() => {
         if (groupId && selectedDate) {
             fetchAttendance();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupId, selectedDate]);
 
     const fetchGroupAndStudents = async () => {
@@ -35,8 +31,6 @@ const AttendancePage = () => {
             const res = await api.get(`/study_groups/${groupId}/`);
             setGroup(res.data);
             setStudents(res.data.students || []);
-
-            // Initial check for 'today'
             checkCanMark(res.data);
         } catch (error) {
             console.error("Failed to fetch group", error);
@@ -52,7 +46,6 @@ const AttendancePage = () => {
                 params: { group_id: groupId, date: selectedDate }
             });
 
-            // Convert array to map for easier access
             const map = {};
             res.data.forEach(record => {
                 map[record.student] = record.is_present;
@@ -64,22 +57,16 @@ const AttendancePage = () => {
     };
 
     const checkCanMark = () => {
-        // Simple client-side check, server also validates
-        // This visual indicator is helpful but not secure source of truth
         const today = new Date().toISOString().split('T')[0];
         const isToday = selectedDate === today;
-
-        // Improve this logic based on days_of_week and time if needed logic exists on frontend
-        // For now trusting server response mostly, but logic:
         setCanMark(isToday);
     };
 
     const handleDateChange = (e) => {
         const date = e.target.value;
         setSelectedDate(date);
-
         const today = new Date().toISOString().split('T')[0];
-        setCanMark(date === today); // Only allow marking for today (or adjust based on rules)
+        setCanMark(date === today);
     };
 
     const toggleAttendance = async (studentId, currentStatus) => {
@@ -89,8 +76,6 @@ const AttendancePage = () => {
         }
 
         const newStatus = !currentStatus;
-
-        // Optimistic update
         setAttendanceMap(prev => ({ ...prev, [studentId]: newStatus }));
 
         try {
@@ -101,9 +86,34 @@ const AttendancePage = () => {
             });
             toast.success(`Attendance ${newStatus ? 'marked' : 'unmarked'}`);
         } catch (error) {
-            // Revert on error
             setAttendanceMap(prev => ({ ...prev, [studentId]: currentStatus }));
             toast.error(error.response?.data?.error || "Failed to mark attendance");
+        }
+    };
+
+    const handleCoinInputChange = (studentId, value) => {
+        setCoinInputs(prev => ({ ...prev, [studentId]: value }));
+    };
+
+    const handleAwardCoins = async (studentId) => {
+        const amount = parseInt(coinInputs[studentId] || 0);
+
+        if (!amount || amount <= 0) {
+            toast.error("Please enter a valid coin amount");
+            return;
+        }
+
+        try {
+            const res = await api.post('/teacher/award-coins/', {
+                student_id: studentId,
+                amount: amount,
+                group_id: groupId
+            });
+
+            toast.success(res.data.message || `Successfully awarded ${amount} coins!`);
+            setCoinInputs(prev => ({ ...prev, [studentId]: '' }));
+        } catch (error) {
+            toast.error(error.response?.data?.error || "Failed to award coins");
         }
     };
 
@@ -111,7 +121,7 @@ const AttendancePage = () => {
     if (!group) return <div className="p-8 text-center text-red-500">Group not found</div>;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-6">
             <button onClick={() => navigate('/teacher/groups')} className="flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors">
                 <ArrowLeft size={20} /> Back to Groups
             </button>
@@ -154,7 +164,8 @@ const AttendancePage = () => {
                             <tr>
                                 <th className="pb-3 pl-2">Student</th>
                                 <th className="pb-3">Status</th>
-                                <th className="pb-3 text-right pr-2">Action</th>
+                                <th className="pb-3">Mark</th>
+                                <th className="pb-3 text-right pr-2">Award Coins</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -188,7 +199,7 @@ const AttendancePage = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="py-3 text-right pr-2">
+                                        <td className="py-3">
                                             <button
                                                 onClick={() => toggleAttendance(student.id, isPresent)}
                                                 disabled={!canMark}
@@ -199,6 +210,25 @@ const AttendancePage = () => {
                                             >
                                                 {isPresent ? 'Mark Absent' : 'Mark Present'}
                                             </button>
+                                        </td>
+                                        <td className="py-3 text-right pr-2">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    placeholder="Amount"
+                                                    value={coinInputs[student.id] || ''}
+                                                    onChange={(e) => handleCoinInputChange(student.id, e.target.value)}
+                                                    className="w-24 border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                                                />
+                                                <button
+                                                    onClick={() => handleAwardCoins(student.id)}
+                                                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white hover:bg-orange-600 transition-all flex items-center gap-1.5"
+                                                >
+                                                    <Coins size={14} />
+                                                    Give
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 );
