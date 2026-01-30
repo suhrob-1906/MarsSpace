@@ -2,8 +2,6 @@ from rest_framework import serializers
 from .models import User, StudyGroup, Attendance
 
 class UserSerializer(serializers.ModelSerializer):
-    last_wpm = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = [
@@ -13,10 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
             'last_activity_date', 'date_joined', 'last_wpm'
         ]
         read_only_fields = ['coins', 'points', 'activity_days', 'has_premium', 'premium_expires_at', 'last_wpm']
-
-    def get_last_wpm(self, obj):
-        last_attempt = obj.typing_attempts.order_by('-created_at').first()
-        return last_attempt.wpm if last_attempt else 0
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
@@ -28,7 +22,6 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 class AdminUserSerializer(serializers.ModelSerializer):
     """Serializer for admin user management with password handling"""
     password = serializers.CharField(write_only=True, required=False)
-    last_wpm = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -39,10 +32,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
             'last_activity_date', 'date_joined', 'is_active', 'password', 'last_wpm'
         ]
         read_only_fields = ['date_joined', 'last_wpm']
-    
-    def get_last_wpm(self, obj):
-        last_attempt = obj.typing_attempts.order_by('-created_at').first()
-        return last_attempt.wpm if last_attempt else 0
     
     def create(self, validated_data):
         password = validated_data.pop('password', None)

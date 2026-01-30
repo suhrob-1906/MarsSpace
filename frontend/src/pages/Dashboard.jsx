@@ -8,6 +8,7 @@ import CountdownTimer from '../components/CountdownTimer';
 import Header from '../components/Header';
 import SubscriptionCard from '../components/SubscriptionCard';
 import AIChatWidget from '../components/AIChatWidget';
+import Leaderboard from '../components/game/Leaderboard';
 
 const Dashboard = () => {
     const { t } = useTranslation();
@@ -254,6 +255,15 @@ const Dashboard = () => {
                             <p className="text-sm mt-2">Check back later for new challenges!</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Leaderboard Section */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg shadow-slate-500/5">
+                    <h3 className="font-bold text-slate-800 mb-4 text-xl flex items-center gap-2">
+                        <Trophy className="text-orange-500" />
+                        {t('season.leaderboard')}
+                    </h3>
+                    <Leaderboard />
                 </div>
             </div>
 

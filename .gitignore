@@ -1,29 +1,59 @@
-
-# Environment variables
-backend/.env
-
-# Django-specific ignores
-backend/db.sqlite3
-backend/media/*
-!backend/media/.gitkeep
-backend/staticfiles
-
-# Python-specific ignores
+# Python
 __pycache__/
-*.pyc
-*.o
+*.py[cod]
+*$py.class
 *.so
 .Python
-env/
 venv/
-.venv/
-build/
-develop-eggs/
-dist/
-eggs/
-.eggs/
+env/
+ENV/
 *.egg-info/
-.installed.cfg
-*.manifest
+dist/
+build/
+*.egg
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environment variables
 .env
-.project
+.env.local
+.env.*.local
+*.env
+
+# Node
+node_modules/
+dist/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Migrations (опционально - раскомментируйте если не хотите пушить миграции)
+# */migrations/*.py
+# !*/migrations/__init__.py

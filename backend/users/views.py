@@ -161,16 +161,19 @@ class AIChatView(APIView):
             api_key = os.environ.get('GEMINI_API_KEY')
             if not api_key:
                 return Response(
-                    {'error': 'AI service is not configured'},
+                    {'error': 'AI service is not configured. Please contact administrator.'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
             
-            # Configure and call Gemini
+            # Configure and call Gemini with 1.5-flash model (most optimal)
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-pro')
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
             # Add context for educational assistant
-            context = f"You are a helpful programming tutor. Student question: {message}"
+            context = f"""You are a helpful programming tutor for MarsSpace educational platform. 
+You help students learn programming concepts in a clear and friendly way.
+Student question: {message}"""
+            
             response = model.generate_content(context)
             
             return Response({
@@ -179,8 +182,10 @@ class AIChatView(APIView):
             })
             
         except Exception as e:
+            # Log the error for debugging
+            print(f"AI Chat Error: {str(e)}")
             return Response(
-                {'error': f'AI service error: {str(e)}'},
+                {'error': 'AI service is temporarily unavailable. Please try again later.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -196,8 +201,8 @@ class TeacherStatsViewSet(viewsets.ViewSet):
         groups = StudyGroup.objects.filter(teachers=request.user) | StudyGroup.objects.filter(teacher=request.user)
         groups = groups.distinct()
         
-        # Calculate total students
-        total_students = User.objects.filter(learning_groups__in=groups).distinct().count()
+        # Calculate total students - only count students with STUDENT role
+        total_students = User.objects.filter(learning_groups__in=groups, role='STUDENT').distinct().count()
         
         # Find next lesson
         now = timezone.now()

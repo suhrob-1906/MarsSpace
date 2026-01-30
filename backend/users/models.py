@@ -26,6 +26,7 @@ class User(AbstractUser):
     # Profile customization
     avatar_url = models.CharField(max_length=500, blank=True, help_text="User avatar image URL")
     last_activity_date = models.DateField(auto_now=True, help_text="Last activity date for streak tracking")
+    last_wpm = models.FloatField(default=0, help_text="Last typing speed (words per minute)")
     
     # created_at is date_joined in AbstractUser
     # is_active is already in AbstractUser
