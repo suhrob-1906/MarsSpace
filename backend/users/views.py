@@ -207,46 +207,53 @@ class TeacherStatsViewSet(viewsets.ViewSet):
         # Find next lesson
         now = timezone.now()
         today = now.date()
+        current_weekday = now.weekday()  # 0=Monday, 6=Sunday
         current_time = now.time()
         
         next_lesson = None
-        min_time_diff = float('inf')
-        
-        weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        current_weekday_idx = now.weekday()
-        
-        for group in groups:
+        for group in groups.filter(is_active=True):
             if not group.days_of_week or not group.start_time:
                 continue
                 
-            for day in group.days_of_week:
-                try:
-                    day_idx = weekdays.index(day)
-                except ValueError:
-                    continue
-                    
-                days_ahead = (day_idx - current_weekday_idx)
-                if days_ahead < 0:
-                    days_ahead += 7
-                
-                # If today, check if start time is in future
-                if days_ahead == 0 and group.start_time <= current_time:
-                    days_ahead = 7
-                
-                lesson_date = today + timedelta(days=days_ahead)
-                lesson_datetime = timezone.make_aware(datetime.combine(lesson_date, group.start_time))
-                
-                time_diff = (lesson_datetime - now).total_seconds()
-                
-                if 0 <= time_diff < min_time_diff:
-                    min_time_diff = time_diff
-                    next_lesson = {
-                        'group_id': group.id,
-                        'group_name': group.name,
-                        'start': lesson_datetime,
-                        'end': timezone.make_aware(datetime.combine(lesson_date, group.end_time)),
-                        'seconds_until': int(time_diff)
-                    }
+            # Parse days (e.g., "1,3,5" for Mon, Wed, Fri)
+            try:
+                lesson_days = [int(d.strip()) for d in group.days_of_week.split(',')]
+            except:
+                continue
+            
+            # Find next lesson day
+            for day in sorted(lesson_days):
+                # If lesson is today and hasn't started yet
+                if day == current_weekday and current_time < group.start_time:
+                    if not next_lesson or day < next_lesson['weekday']:
+                        next_lesson = {
+                            'group_name': group.name,
+                            'weekday': day,
+                            'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],
+                            'start_time': group.start_time.strftime('%H:%M'),
+                            'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
+                        }
+                # If lesson is in future days this week
+                elif day > current_weekday:
+                    if not next_lesson or day < next_lesson['weekday']:
+                        next_lesson = {
+                            'group_name': group.name,
+                            'weekday': day,
+                            'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],
+                            'start_time': group.start_time.strftime('%H:%M'),
+                            'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
+                        }
+            
+            # If no lesson found this week, check next week
+            if not next_lesson and lesson_days:
+                first_day = min(lesson_days)
+                next_lesson = {
+                    'group_name': group.name,
+                    'weekday': first_day,
+                    'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][first_day],
+                    'start_time': group.start_time.strftime('%H:%M'),
+                    'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
+                }
         
         return Response({
             'total_students': total_students,

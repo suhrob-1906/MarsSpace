@@ -30,7 +30,8 @@ export default function AIChatWidget() {
         setLoading(true);
 
         try {
-            const response = await api.post('/api/v1/ai-chat/', { message: userMessage });
+            setLoading(true);
+            const response = await api.post('/ai-chat/', { message: userMessage });  // Fixed: removed duplicate /api/v1/
             setMessages(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
         } catch (error) {
             setMessages(prev => [
@@ -79,8 +80,8 @@ export default function AIChatWidget() {
                             >
                                 <div
                                     className={`max-w-[80%] px-4 py-2 rounded-lg ${msg.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-br-none'
-                                            : 'bg-white text-gray-800 shadow rounded-bl-none'
+                                        ? 'bg-indigo-600 text-white rounded-br-none'
+                                        : 'bg-white text-gray-800 shadow rounded-bl-none'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>

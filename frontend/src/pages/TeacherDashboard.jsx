@@ -18,15 +18,14 @@ const TeacherDashboard = () => {
             try {
                 const [statsRes, homeworkRes] = await Promise.all([
                     api.get('/teacher/stats/'),
-                    api.get('/admin/homework/submissions/') // Reusing existing endpoint or need a filtered one
+                    api.get('/homework-submissions/')  // Fixed: use homework-submissions instead of admin endpoint
                 ]);
 
                 setStats(statsRes.data);
 
-                // If the user is teacher, the list call typically returns submissions for their groups
-                // based on the queryset we saw earlier
+                // Get submissions data
                 const subData = homeworkRes.data.results || homeworkRes.data;
-                setSubmissions(Array.isArray(subData) ? subData.slice(0, 5) : []);
+                setSubmissions(Array.isArray(subData) ? subData.slice(0, 10) : []);
 
             } catch (error) {
                 console.error("Failed to fetch teacher dashboard", error);
@@ -52,75 +51,49 @@ const TeacherDashboard = () => {
             <h1 className="text-3xl font-bold text-white mb-2">Teacher Dashboard</h1>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                {/* Total Students */}
-                <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 rounded-2xl p-6 border border-indigo-500/20">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                            <Users className="text-indigo-400" size={24} />
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-500/5">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <div className="text-3xl font-bold text-white">{stats.total_students}</div>
-                            <div className="text-sm text-slate-400">Total Students</div>
+                            <p className="text-slate-500 text-sm mb-1">Total Students</p>
+                            <p className="text-3xl font-bold text-slate-800">{stats.total_students}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <Users className="text-blue-600" size={24} />
                         </div>
                     </div>
                 </div>
 
-                {/* Active Groups */}
-                <div className="bg-gradient-to-br from-purple-900/40 to-slate-900 rounded-2xl p-6 border border-purple-500/20">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                            <BookOpen className="text-purple-400" size={24} />
-                        </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-500/5">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <div className="text-3xl font-bold text-white">{stats.active_groups}</div>
-                            <div className="text-sm text-slate-400">Active Groups</div>
+                            <p className="text-slate-500 text-sm mb-1">Active Groups</p>
+                            <p className="text-3xl font-bold text-slate-800">{stats.active_groups}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <BookOpen className="text-green-600" size={24} />
                         </div>
                     </div>
                 </div>
 
-                {/* Next Lesson */}
-                <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 rounded-2xl p-6 border border-indigo-500/20 col-span-1 md:col-span-1">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                                <Clock className="text-orange-400" size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-white">Next Lesson</h3>
-                                {stats.next_lesson ? (
-                                    <p className="text-sm text-slate-400">
-                                        {stats.next_lesson.group_name}
-                                    </p>
-                                ) : (
-                                    <p className="text-sm text-slate-500">No upcoming lessons</p>
-                                )}
-                            </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-500/5">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-slate-500 text-sm mb-1">Next Lesson</p>
+                            {stats.next_lesson ? (
+                                <div>
+                                    <p className="text-lg font-bold text-slate-800">{stats.next_lesson.day_name}</p>
+                                    <p className="text-sm text-slate-600">{stats.next_lesson.start_time}</p>
+                                    <p className="text-xs text-slate-400 mt-1">{stats.next_lesson.group_name}</p>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-slate-400">No upcoming lessons</p>
+                            )}
+                        </div>
+                        <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+                            <Clock className="text-orange-600" size={24} />
                         </div>
                     </div>
-
-                    {stats.next_lesson && (
-                        <div className="mt-4">
-                            <div className="text-sm text-slate-300">
-                                {new Date(stats.next_lesson.start).toLocaleString('ru-RU', {
-                                    weekday: 'long',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </div>
-                            <div className="mt-4 flex gap-2">
-                                <Link
-                                    to="/teacher/attendance"
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 rounded-lg text-sm font-medium transition-colors"
-                                >
-                                    Mark Attendance
-                                </Link>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -140,31 +113,57 @@ const TeacherDashboard = () => {
                 </div>
             )}
 
-            {/* Recent Submissions */}
-            <div className="card">
-                <h3 className="font-bold text-white mb-4">Recent Homework Submissions</h3>
+            {/* Homework Submissions */}
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-lg shadow-slate-500/5">
+                <h3 className="font-bold text-slate-800 mb-4 text-xl">Homework Submissions</h3>
+
                 {submissions.length > 0 ? (
-                    <div className="space-y-4">
-                        {submissions.map((sub) => (
-                            <div key={sub.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
-                                        <FileText size={20} />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-white">{sub.student_name || 'Student'}</div>
-                                        <div className="text-sm text-slate-400">{sub.homework_title || 'Homework'}</div>
-                                    </div>
+                    <div className="space-y-3">
+                        {submissions.map((submission) => (
+                            <div
+                                key={submission.id}
+                                className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                            >
+                                <div className="flex-1">
+                                    <p className="font-semibold text-slate-800">
+                                        {submission.student_name || 'Unknown Student'}
+                                    </p>
+                                    <p className="text-sm text-slate-600 mt-1">
+                                        {submission.homework_title || 'Homework'}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        Submitted: {new Date(submission.submitted_at).toLocaleDateString('ru-RU', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
                                 </div>
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${sub.grade ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-500'
-                                    }`}>
-                                    {sub.grade ? `Graded: ${sub.grade}` : 'Needs Grading'}
+                                <div className="flex items-center gap-3">
+                                    {submission.status === 'graded' ? (
+                                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm font-medium">
+                                            ✓ Проверено
+                                        </span>
+                                    ) : (
+                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium">
+                                            ⏳ На проверке
+                                        </span>
+                                    )}
+                                    {submission.points_awarded && (
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
+                                            {submission.points_awarded} pts
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-slate-500 text-center py-8">No recent submissions found.</p>
+                    <div className="text-center py-8 text-slate-400">
+                        <FileText size={48} className="mx-auto mb-3 opacity-50" />
+                        <p>No homework submissions yet</p>
+                    </div>
                 )}
             </div>
         </div>

@@ -101,7 +101,15 @@ const Login = () => {
                 </form>
 
                 <p className="text-slate-400 text-center mt-8 text-sm">
-                    Don't have an account? <span className="text-orange-500 font-semibold cursor-pointer hover:underline">Contact Admin</span>
+                    Don't have an account?
+                    <a
+                        href="https://t.me/sssuuuhhhaaarrriiik"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1 text-orange-500 font-semibold hover:underline transition-colors"
+                    >
+                        Contact Admin
+                    </a>
                 </p>
             </div>
         </div>

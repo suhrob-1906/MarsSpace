@@ -10,7 +10,7 @@ from .views import (
 router = DefaultRouter()
 router.register(r'eduverse/categories', EduverseCategoryViewSet, basename='eduverse-category')
 router.register(r'eduverse/videos', EduverseVideoViewSet, basename='eduverse-video')
-router.register(r'blog/posts', BlogPostViewSet, basename='blog-post')
+router.register(r'eduverse/blog-posts', BlogPostViewSet, basename='blog-post')  # Fixed URL
 router.register(r'homework', HomeworkViewSet, basename='homework')
 router.register(r'homework-submissions', HomeworkSubmissionViewSet, basename='homework-submission')
 
