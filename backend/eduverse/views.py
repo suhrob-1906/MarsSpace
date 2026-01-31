@@ -60,11 +60,17 @@ class HomeworkViewSet(viewsets.ModelViewSet):
         # Auto-set created_by to current user
         serializer.save(created_by=self.request.user)
 
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
 class HomeworkSubmissionViewSet(viewsets.ModelViewSet):
-    """Student homework submissions"""
-    queryset = HomeworkSubmission.objects.all()
+    """
+    CRUD for homework submissions.
+    Students can creates/update their submissions.
+    Teachers can view/grade submissions for their homework.
+    """
     serializer_class = HomeworkSubmissionSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     
     def get_queryset(self):
         user = self.request.user

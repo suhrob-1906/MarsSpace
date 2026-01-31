@@ -155,11 +155,19 @@ class AIChatView(APIView):
         
         try:
             # Import Gemini API
-            import google.generativeai as genai
+            try:
+                import google.generativeai as genai
+            except ImportError:
+                print("Error: google-generativeai package not installed")
+                return Response(
+                    {'error': 'AI service configuration error'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
             
             # Get API key from environment
             api_key = os.environ.get('GEMINI_API_KEY')
             if not api_key:
+                print("Error: GEMINI_API_KEY not found in environment")
                 return Response(
                     {'error': 'AI service is not configured. Please contact administrator.'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
@@ -174,15 +182,32 @@ class AIChatView(APIView):
 You help students learn programming concepts in a clear and friendly way.
 Student question: {message}"""
             
-            response = model.generate_content(context)
-            
-            return Response({
-                'reply': response.text,
-                'timestamp': timezone.now()
-            })
+            try:
+                response = model.generate_content(context)
+                
+                # Check if response was blocked or empty
+                if not response.text:
+                   raise ValueError("Empty response from AI")
+                   
+                return Response({
+                    'reply': response.text,
+                    'timestamp': timezone.now()
+                })
+            except Exception as gen_error:
+                print(f"Gemini Generation Error: {gen_error}")
+                # Fallback to try a different way to access text if blocked
+                if hasattr(gen_error, 'response') and gen_error.response.prompt_feedback:
+                     print(f"Safety blocking: {gen_error.response.prompt_feedback}")
+                
+                return Response(
+                    {'error': 'AI could not generate a response. Please try a different question.'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
             
         except Exception as e:
             # Log the error for debugging
+            import traceback
+            traceback.print_exc()
             print(f"AI Chat Error: {str(e)}")
             return Response(
                 {'error': 'AI service is temporarily unavailable. Please try again later.'},
@@ -190,24 +215,33 @@ Student question: {message}"""
             )
 
 class TeacherStatsViewSet(viewsets.ViewSet):
-    """Dashboard statistics for teachers"""
+    """Dashboard statistics for teachers and admins"""
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
-        if request.user.role != 'TEACHER':
+        user = request.user
+        if user.role not in ['TEACHER', 'ADMIN']:
             return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
             
-        # Get teacher's groups
-        groups = StudyGroup.objects.filter(teachers=request.user) | StudyGroup.objects.filter(teacher=request.user)
-        groups = groups.distinct()
-        
-        # Calculate total students - only count students with STUDENT role
-        total_students = User.objects.filter(learning_groups__in=groups, role='STUDENT').distinct().count()
+        # Get groups based on role
+        if user.role == 'ADMIN':
+            groups = StudyGroup.objects.all()
+            total_students = User.objects.filter(role='STUDENT').count()
+        else:
+            groups = StudyGroup.objects.filter(teachers=user) | StudyGroup.objects.filter(teacher=user)
+            groups = groups.distinct()
+            total_students = User.objects.filter(learning_groups__in=groups, role='STUDENT').distinct().count()
         
         # Find next lesson
         now = timezone.now()
         current_weekday = now.weekday()  # 0=Monday, 6=Sunday
         current_time = now.time()
+        
+        # Map day names to integers
+        day_mapping = {
+            'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 
+            'Friday': 4, 'Saturday': 5, 'Sunday': 6
+        }
         
         next_lesson = None
         min_seconds_until = None
@@ -216,15 +250,35 @@ class TeacherStatsViewSet(viewsets.ViewSet):
             if not group.days_of_week or not group.start_time:
                 continue
             
-            # Handle both JSON array and comma-separated string formats
+            # Normalize day input to integers
+            lesson_days = []
             try:
-                if isinstance(group.days_of_week, list):
-                    lesson_days = [int(d) for d in group.days_of_week]
-                else:
-                    lesson_days = [int(d.strip()) for d in str(group.days_of_week).split(',')]
-            except:
+                # Provide defaults if needed
+                raw_days = group.days_of_week
+                if isinstance(raw_days, list):
+                    for d in raw_days:
+                        if isinstance(d, int):
+                            lesson_days.append(d)
+                        elif str(d) in day_mapping:
+                            lesson_days.append(day_mapping[str(d)])
+                        elif str(d).isdigit():
+                            lesson_days.append(int(d))
+                elif isinstance(raw_days, str):
+                    # Handle comma separated string
+                    parts = raw_days.split(',')
+                    for p in parts:
+                        p = p.strip()
+                        if p in day_mapping:
+                            lesson_days.append(day_mapping[p])
+                        elif p.isdigit():
+                            lesson_days.append(int(p))
+            except Exception as e:
+                print(f"Error parsing schedule for group {group.id}: {e}")
                 continue
             
+            if not lesson_days:
+                continue
+
             # Find next lesson day for this group
             for day in lesson_days:
                 # Calculate days until this lesson

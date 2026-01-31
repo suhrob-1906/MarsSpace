@@ -12,7 +12,7 @@ import Leaderboard from '../components/game/Leaderboard';
 
 const Dashboard = () => {
     const { t } = useTranslation();
-    const { user, setUser } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [recentProgress, setRecentProgress] = useState(null);
     const [season, setSeason] = useState(null);
     const [myGroups, setMyGroups] = useState([]);
@@ -22,7 +22,9 @@ const Dashboard = () => {
             try {
                 // Fetch user data first to trigger activity update
                 const userRes = await api.get('/me/');
-                setUser(userRes.data);
+                if (refreshUser) {
+                    refreshUser(userRes.data);
+                }
 
                 const [progressRes, leaderboardRes, groupsRes] = await Promise.all([
                     api.get('/my-progress/'),
@@ -36,24 +38,30 @@ const Dashboard = () => {
                 if (leaderboardRes.data.season) {
                     setSeason(leaderboardRes.data.season);
                 }
-                setMyGroups(groupsRes.data.results || groupsRes.data);
+
+                // Handle pagination
+                const groupsData = groupsRes.data.results || groupsRes.data;
+                setMyGroups(Array.isArray(groupsData) ? groupsData : []);
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
             }
         };
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [refreshUser]);
 
-    const handlePurchaseSuccess = (data) => {
-        setUser(prev => ({
-            ...prev,
-            coins: data.coins_remaining,
-            has_premium: true,
-            premium_expires_at: data.premium_expires_at
-        }));
+    const handlePurchaseSuccess = async () => {
+        try {
+            const userRes = await api.get('/me/');
+            if (refreshUser) {
+                refreshUser(userRes.data);
+            }
+        } catch (error) {
+            console.error("Failed to refresh user data", error);
+        }
     };
 
+    // Helper to calculate progress percentage safely
     const getProgressPercent = (prog) => {
         if (!prog) return 0;
         return Math.round((prog.completed_lessons_count / 12) * 100);
@@ -62,20 +70,47 @@ const Dashboard = () => {
     return (
         <>
             <div className="container mx-auto px-4 py-8 space-y-8">
-                {/* Welcome Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-800 mb-2">
-                            {t('dashboard.welcome')}, <span className="text-orange-600">{user?.username}</span>!
-                        </h1>
-                        <p className="text-slate-500 text-lg">Track your progress and achievements on Mars 🚀</p>
+                <Header />
+
+                {/* Welcome Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+                    <div className="relative z-10 flex items-center gap-6">
+                        <div className="relative">
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-500 p-1 shadow-lg shadow-orange-500/20">
+                                <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
+                                    {user?.avatar_url ? (
+                                        <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-2xl font-bold bg-slate-800 text-slate-400">
+                                            {user?.username?.[0]?.toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {user?.has_premium && (
+                                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center border-4 border-slate-900 shadow-sm" title="Premium Member">
+                                    <Star size={14} className="fill-white text-white" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <h1 className="text-3xl font-bold mb-1">
+                                {t('dashboard.welcome')}, <span className="text-orange-400">{user?.first_name || user?.username}!</span>
+                            </h1>
+                            <p className="text-slate-400 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                {t('dashboard.status_active')}
+                            </p>
+                        </div>
                     </div>
 
-                    {/* Season Countdown */}
                     {season && (
-                        <div className="bg-white p-4 rounded-xl border border-orange-200 shadow-lg shadow-orange-500/5">
-                            <p className="text-sm text-slate-500 mb-2 font-medium">
-                                {t('season.title')}: <span className="text-orange-600 font-bold">{season.title}</span>
+                        <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[200px]">
+                            <p className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">
+                                {t('season.title')}: <span className="text-orange-400 font-bold">{season.title}</span>
                             </p>
                             <CountdownTimer endDate={season.end_date} />
                         </div>
@@ -83,19 +118,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Stats Overview */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-2xl p-4 border border-blue-100 shadow-lg shadow-blue-500/5 hover:scale-105 transition-all">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                                <Trophy className="text-blue-500" size={20} />
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-slate-800">{user?.points || 0}</div>
-                                <div className="text-xs text-slate-500">Points</div>
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="bg-white rounded-2xl p-4 border border-yellow-100 shadow-lg shadow-yellow-500/5 hover:scale-105 transition-all">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center">
