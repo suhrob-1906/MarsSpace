@@ -34,9 +34,10 @@ export default function AIChatWidget() {
             const response = await api.post('/ai-chat/', { message: userMessage });  // Fixed: removed duplicate /api/v1/
             setMessages(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
         } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Извините, произошла ошибка. Попробуйте позже.';
             setMessages(prev => [
                 ...prev,
-                { role: 'assistant', content: 'Извините, произошла ошибка. Попробуйте позже.' }
+                { role: 'assistant', content: errorMessage }
             ]);
         } finally {
             setLoading(false);
