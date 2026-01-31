@@ -27,7 +27,7 @@ api.interceptors.response.use(
     async (error) => {
         // Handle network errors
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-            const errorMessage = 'Не удалось подключиться к серверу. Убедитесь, что backend запущен на http://127.0.0.1:8000';
+            const errorMessage = 'Не удалось подключиться к серверу. Пожалуйста, перезагрузите страницу или попробуйте позже.';
             error.userMessage = errorMessage;
             console.error('Network Error:', errorMessage);
         }
