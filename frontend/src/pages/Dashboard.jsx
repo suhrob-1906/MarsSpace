@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Play, Trophy, Zap, Target, BookOpen, Clock, Users } from 'lucide-react';
+import { Play, Trophy, Zap, Target, BookOpen, Clock, Users, Star } from 'lucide-react';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

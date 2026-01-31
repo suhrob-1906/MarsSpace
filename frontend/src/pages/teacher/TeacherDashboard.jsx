@@ -18,13 +18,12 @@ const TeacherDashboard = () => {
             try {
                 const [statsRes, homeworkRes] = await Promise.all([
                     api.get('/teacher/stats/'),
-                    api.get('/admin/homework/submissions/') // Reusing existing endpoint or need a filtered one
+                    api.get('/homework-submissions/') // Use correct endpoint for homework submissions
                 ]);
 
                 setStats(statsRes.data);
 
-                // If the user is teacher, the list call typically returns submissions for their groups
-                // based on the queryset we saw earlier
+                // Handle pagination if present
                 const subData = homeworkRes.data.results || homeworkRes.data;
                 setSubmissions(Array.isArray(subData) ? subData.slice(0, 5) : []);
 
@@ -40,9 +39,13 @@ const TeacherDashboard = () => {
 
     const isLessonNow = (lesson) => {
         if (!lesson) return false;
-        // If seconds until is 0 or negative (but logically handled by backend returning 0 for "now")
-        // Actually backend logic sets days_ahead to 7 if passed, so we trust seconds_until
         return lesson.seconds_until < (60 * 15); // Show "Now" if within 15 mins
+    };
+
+    // Calculate end date for countdown
+    const getNextLessonDate = () => {
+        if (!stats.next_lesson || stats.next_lesson.seconds_until === undefined) return null;
+        return new Date(Date.now() + stats.next_lesson.seconds_until * 1000).toISOString();
     };
 
     if (loading) return <div className="text-center text-slate-400 py-10">Loading dashboard...</div>;
@@ -101,7 +104,7 @@ const TeacherDashboard = () => {
 
                     {stats.next_lesson && (
                         <div className="mt-4">
-                            <CountdownTimer endDate={stats.next_lesson.start} />
+                            <CountdownTimer endDate={getNextLessonDate()} />
                             <div className="mt-4 flex gap-2">
                                 <Link
                                     to={`/teacher/attendance/${stats.next_lesson.group_id}`}
