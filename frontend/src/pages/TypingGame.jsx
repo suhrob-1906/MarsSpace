@@ -131,6 +131,7 @@ const TypingGame = () => {
             }
         } catch (err) {
             console.error('Failed to submit score:', err);
+            toast.error('Failed to save score. Please check connection.');
         }
     };
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Use environment variable or default to localhost
 // For Vercel/Render, VITE_API_BASE_URL should be set
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://marsspace-backend.onrender.com/api/v1';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -31,7 +31,7 @@ api.interceptors.response.use(
             error.userMessage = errorMessage;
             console.error('Network Error:', errorMessage);
         }
-        
+
         // Handle 401 Unauthorized - logout user
         if (error.response?.status === 401) {
             localStorage.removeItem('access_token');
@@ -40,17 +40,17 @@ api.interceptors.response.use(
                 window.location.href = '/login';
             }
         }
-        
+
         // Add user-friendly error messages
         if (error.response?.data) {
-            error.userMessage = error.response.data.detail || 
-                               error.response.data.error || 
-                               error.response.data.message ||
-                               'Произошла ошибка при выполнении запроса';
+            error.userMessage = error.response.data.detail ||
+                error.response.data.error ||
+                error.response.data.message ||
+                'Произошла ошибка при выполнении запроса';
         } else if (!error.userMessage) {
             error.userMessage = 'Произошла неизвестная ошибка';
         }
-        
+
         return Promise.reject(error);
     }
 );
