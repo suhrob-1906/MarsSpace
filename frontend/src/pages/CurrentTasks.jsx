@@ -23,10 +23,15 @@ const CurrentTasks = () => {
             setLoading(true);
             const [tasksRes, subsRes] = await Promise.all([
                 api.get('/homework/'),
-                api.get('/homework-submissions/')
+                api.get('/homework-submissions/') // This endpoint handles filtering by user automatically
             ]);
-            setTasks(tasksRes.data);
-            setSubmissions(subsRes.data);
+
+            // Handle pagination
+            const tasksData = tasksRes.data.results || tasksRes.data;
+            setTasks(Array.isArray(tasksData) ? tasksData : []);
+
+            const subsData = subsRes.data.results || subsRes.data;
+            setSubmissions(Array.isArray(subsData) ? subsData : []);
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
             toast.error('Failed to load tasks');

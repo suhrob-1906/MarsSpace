@@ -104,8 +104,10 @@ const TeacherDashboard = () => {
 
                     {stats.next_lesson && (
                         <div className="mt-4">
-                            <CountdownTimer endDate={getNextLessonDate()} />
-                            <div className="mt-4 flex gap-2">
+                            <div className="bg-orange-50 rounded-lg p-3 mb-3 text-center">
+                                <span className="text-orange-700 font-bold">{stats.next_lesson.day_name}, {stats.next_lesson.start_time}</span>
+                            </div>
+                            <div className="flex gap-2">
                                 <Link
                                     to={`/teacher/attendance/${stats.next_lesson.group_id}`}
                                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 rounded-lg text-sm font-medium transition-colors"

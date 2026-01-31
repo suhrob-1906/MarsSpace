@@ -160,7 +160,7 @@ class AIChatView(APIView):
             except ImportError:
                 print("Error: google-generativeai package not installed")
                 return Response(
-                    {'error': 'AI service configuration error'},
+                    {'error': 'AI service configuration error (missing package)'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
             
@@ -169,24 +169,22 @@ class AIChatView(APIView):
             if not api_key:
                 print("Error: GEMINI_API_KEY not found in environment")
                 return Response(
-                    {'error': 'AI service is not configured. Please contact administrator.'},
+                    {'error': 'AI service is not configured (missing key)'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
             
-            # Configure and call Gemini with 1.5-flash model (most optimal)
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            
-            # Add context for educational assistant
-            context = f"""You are a helpful programming tutor for MarsSpace educational platform. 
+            # Configure and call Gemini
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                context = f"""You are a helpful programming tutor for MarsSpace educational platform. 
 You help students learn programming concepts in a clear and friendly way.
 Student question: {message}"""
-            
-            try:
+                
                 response = model.generate_content(context)
                 
-                # Check if response was blocked or empty
-                if not response.text:
+                if not response or not response.text:
                    raise ValueError("Empty response from AI")
                    
                 return Response({
@@ -194,23 +192,19 @@ Student question: {message}"""
                     'timestamp': timezone.now()
                 })
             except Exception as gen_error:
-                print(f"Gemini Generation Error: {gen_error}")
-                # Fallback to try a different way to access text if blocked
-                if hasattr(gen_error, 'response') and gen_error.response.prompt_feedback:
-                     print(f"Safety blocking: {gen_error.response.prompt_feedback}")
-                
+                print(f"Gemini API Error: {gen_error}")
                 return Response(
-                    {'error': 'AI could not generate a response. Please try a different question.'},
+                    {'error': 'AI could not generate a response at this time.'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
             
         except Exception as e:
-            # Log the error for debugging
+            # Catch all other errors
             import traceback
             traceback.print_exc()
-            print(f"AI Chat Error: {str(e)}")
+            print(f"AI Chat Internal Error: {str(e)}")
             return Response(
-                {'error': 'AI service is temporarily unavailable. Please try again later.'},
+                {'error': 'AI service encountered an internal error.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -308,6 +302,7 @@ class TeacherStatsViewSet(viewsets.ViewSet):
                 if min_seconds_until is None or seconds_until < min_seconds_until:
                     min_seconds_until = seconds_until
                     next_lesson = {
+                        'group_id': group.id,
                         'group_name': group.name,
                         'weekday': day,
                         'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],

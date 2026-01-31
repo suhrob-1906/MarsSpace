@@ -56,7 +56,7 @@ class HomeworkSubmission(models.Model):
     """Student homework submissions"""
     homework = models.ForeignKey(Homework, on_delete=models.CASCADE, related_name='submissions')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='homework_submissions')
-    content = models.TextField(help_text="Student's answer or solution")
+    content = models.TextField(help_text="Student's answer or solution", blank=True, null=True)
     file_url = models.FileField(upload_to='submissions/', blank=True, null=True, help_text="Optional file attachment")
     points_earned = models.IntegerField(default=0, help_text="Points awarded by teacher")
     submitted_at = models.DateTimeField(auto_now_add=True)
