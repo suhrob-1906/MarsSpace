@@ -116,3 +116,24 @@ class AttendanceSerializer(serializers.ModelSerializer):
             'marked_at', 'notes'
         ]
         read_only_fields = ['marked_by', 'marked_at']
+
+class StudyGroupListSerializer(serializers.ModelSerializer):
+    """Lighter serializer for listing groups (excludes full student list)"""
+    students_count = serializers.SerializerMethodField()
+    teachers_count = serializers.SerializerMethodField()
+    teacher_details = SimpleUserSerializer(source='teacher', read_only=True)
+    
+    class Meta:
+        model = StudyGroup
+        fields = [
+            'id', 'name', 'description', 'is_active', 
+            'days_of_week', 'start_time', 'end_time',
+            'students_count', 'teachers_count', 'teacher_details'
+        ]
+    
+    def get_students_count(self, obj):
+        return obj.students.count()
+    
+    def get_teachers_count(self, obj):
+        return obj.teachers.count()
+

@@ -70,6 +70,12 @@ class StudyGroupViewSet(viewsets.ModelViewSet):
     serializer_class = StudyGroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            from .serializers import StudyGroupListSerializer
+            return StudyGroupListSerializer
+        return StudyGroupSerializer
+
     def get_queryset(self):
         user = self.request.user
         queryset = StudyGroup.objects.select_related('teacher').prefetch_related('students', 'teachers')

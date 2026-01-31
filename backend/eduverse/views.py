@@ -89,7 +89,33 @@ class HomeworkSubmissionViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         # Auto-set student to current user
-        serializer.save(student=self.request.user)
+        # Check if submission already exists for this homework and student
+        homework = serializer.validated_data['homework']
+        student = self.request.user
+        
+        # If updating existing, we need to handle it gracefully
+        # Since this is perform_create, the serializer validation might have already passed
+        # dependent on how UniqueTogetherValidator is handled by DRF.
+        # But typically UniqueTogetherValidator runs during serializer.is_valid().
+        # To support "update on create", we usually need to override create() method of ViewSet.
+        serializer.save(student=student)
+
+    def create(self, request, *args, **kwargs):
+        """Override create to handle re-submissions (update instead of error)"""
+        try:
+            homework_id = request.data.get('homework')
+            if homework_id:
+                existing = HomeworkSubmission.objects.filter(homework_id=homework_id, student=request.user).first()
+                if existing:
+                    # Update existing submission
+                    serializer = self.get_serializer(existing, data=request.data, partial=True)
+                    serializer.is_valid(raise_exception=True)
+                    self.perform_update(serializer)
+                    return Response(serializer.data)
+        except Exception:
+            pass # Fallback to normal create which will trigger validation errors if needed
+            
+        return super().create(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def grade(self, request, pk=None):

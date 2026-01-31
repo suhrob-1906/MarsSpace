@@ -67,7 +67,11 @@ const CurrentTasks = () => {
         setSubmitting(true);
         const formData = new FormData();
         formData.append('homework', selectedTask.id);
-        formData.append('content', submissionText);
+
+        // Ensure content is not empty string to prevent validation error
+        const contentToSend = submissionText.trim() === '' ? 'File Submission' : submissionText;
+        formData.append('content', contentToSend);
+
         if (submissionFile) {
             formData.append('file_url', submissionFile);
         }
