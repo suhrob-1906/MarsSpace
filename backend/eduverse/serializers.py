@@ -52,6 +52,13 @@ class HomeworkSubmissionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['student', 'submitted_at', 'graded_at', 'graded_by']
     
+    def get_validators(self):
+        """Remove UniqueTogetherValidator to allow re-submissions via custom create logic"""
+        validators = super().get_validators()
+        # Filter out UniqueTogetherValidator for homework+student
+        from rest_framework.validators import UniqueTogetherValidator
+        return [v for v in validators if not isinstance(v, UniqueTogetherValidator)]
+    
     def get_status(self, obj):
         if obj.graded_at:
             return 'graded'
