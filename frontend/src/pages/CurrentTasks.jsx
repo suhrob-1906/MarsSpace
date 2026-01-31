@@ -64,6 +64,12 @@ const CurrentTasks = () => {
             return;
         }
 
+        // Check file size (50MB limit)
+        if (submissionFile && submissionFile.size > 50 * 1024 * 1024) {
+            toast.error('File size must be less than 50MB');
+            return;
+        }
+
         setSubmitting(true);
         const formData = new FormData();
         formData.append('homework', selectedTask.id);
@@ -85,7 +91,10 @@ const CurrentTasks = () => {
             fetchData(); // Refresh data
         } catch (error) {
             console.error('Submission failed:', error);
-            toast.error(error.response?.data?.error || 'Failed to submit homework');
+            const errorMsg = error.response?.data?.error
+                || error.response?.data?.detail
+                || 'Failed to submit homework';
+            toast.error(errorMsg);
         } finally {
             setSubmitting(false);
         }
@@ -214,6 +223,7 @@ const CurrentTasks = () => {
                                 <div className="border-2 border-dashed border-slate-700 rounded-lg p-4 text-center hover:border-slate-500 transition-colors cursor-pointer bg-slate-900/50 relative">
                                     <input
                                         type="file"
+                                        accept=".zip,.pdf,.jpg,.jpeg,.png,.doc,.docx"
                                         onChange={e => setSubmissionFile(e.target.files[0])}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
