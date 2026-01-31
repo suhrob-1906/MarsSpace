@@ -41,12 +41,18 @@ class HomeworkSubmissionSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
     homework_title = serializers.CharField(source='homework.title', read_only=True)
     graded_by_name = serializers.CharField(source='graded_by.get_full_name', read_only=True)
+    status = serializers.SerializerMethodField()
     
     class Meta:
         model = HomeworkSubmission
         fields = [
             'id', 'homework', 'homework_title', 'student', 'student_name',
             'content', 'file_url', 'points_earned', 'submitted_at',
-            'graded_at', 'graded_by', 'graded_by_name', 'feedback'
+            'graded_at', 'graded_by', 'graded_by_name', 'feedback', 'status'
         ]
         read_only_fields = ['student', 'submitted_at', 'graded_at', 'graded_by']
+    
+    def get_status(self, obj):
+        if obj.graded_at:
+            return 'graded'
+        return 'submitted'

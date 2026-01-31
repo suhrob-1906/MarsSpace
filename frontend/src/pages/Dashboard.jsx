@@ -126,8 +126,8 @@ const Dashboard = () => {
                                 <Clock className="text-purple-500" size={20} />
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-slate-800">{user?.last_wpm || 0}</div>
-                                <div className="text-xs text-slate-500">WPM</div>
+                                <div className="text-2xl font-bold text-slate-800">{user?.max_wpm || 0}</div>
+                                <div className="text-xs text-slate-500">Max WPM</div>
                             </div>
                         </div>
                     </div>
@@ -227,9 +227,9 @@ const Dashboard = () => {
 
                             <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
                                 <div className="text-5xl font-black text-slate-800 mb-1">
-                                    {user?.last_wpm || 0}
+                                    {user?.max_wpm || 0}
                                 </div>
-                                <div className="text-xs uppercase tracking-wider text-slate-500 font-bold">{t('dashboard.wpm_last')}</div>
+                                <div className="text-xs uppercase tracking-wider text-slate-500 font-bold">Max WPM</div>
                             </div>
 
                             <Link to="/typing" className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg group-hover:scale-105">

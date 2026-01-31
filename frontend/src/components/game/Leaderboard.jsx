@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trophy, Medal, Star } from 'lucide-react';
+import { Trophy, Medal, Star, Zap } from 'lucide-react';
 import api from '../../services/api';
 
 const Leaderboard = () => {
@@ -28,13 +28,26 @@ const Leaderboard = () => {
     const getRankIcon = (rank) => {
         switch (rank) {
             case 1:
+                return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold shadow-lg">1</div>;
+            case 2:
+                return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-white font-bold shadow-lg">2</div>;
+            case 3:
+                return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-white font-bold shadow-lg">3</div>;
+            default:
+                return <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold">{rank}</div>;
+        }
+    };
+
+    const getRankBadge = (rank) => {
+        switch (rank) {
+            case 1:
                 return <Trophy className="w-5 h-5 text-yellow-400" />;
             case 2:
-                return <Medal className="w-5 h-5 text-gray-300" />;
+                return <Medal className="w-5 h-5 text-gray-400" />;
             case 3:
                 return <Medal className="w-5 h-5 text-amber-600" />;
             default:
-                return <span className="text-slate-500 font-bold w-5 text-center">{rank}</span>;
+                return null;
         }
     };
 
@@ -52,32 +65,43 @@ const Leaderboard = () => {
                     leaderboard.map((entry) => (
                         <div
                             key={entry.user_id}
-                            className={`flex items-center p-3 hover:bg-slate-800/30 transition-colors ${entry.rank === currentUserRank ? 'bg-primary/10 border-l-2 border-primary' : ''
+                            className={`flex items-center p-4 hover:bg-slate-800/30 transition-colors ${entry.rank === currentUserRank ? 'bg-primary/10 border-l-4 border-primary' : ''
+                                } ${entry.rank <= 3 ? 'bg-gradient-to-r from-slate-800/50 to-transparent' : ''
                                 }`}
                         >
-                            <div className="mr-4 flex-shrink-0 w-8 flex justify-center">
+                            <div className="mr-4 flex-shrink-0 flex items-center gap-2">
                                 {getRankIcon(entry.rank)}
+                                {getRankBadge(entry.rank)}
                             </div>
 
                             <div className="flex-1 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-700 overflow-hidden flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-600">
                                     {entry.avatar_url ? (
                                         <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold bg-gradient-to-br from-primary to-purple-600 text-white">
+                                        <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-primary to-purple-600 text-white">
                                             {entry.username[0].toUpperCase()}
                                         </div>
                                     )}
                                 </div>
                                 <div>
-                                    <div className="font-medium text-slate-200">{entry.username}</div>
-                                    <div className="text-xs text-slate-500">{entry.attempts_count} games</div>
+                                    <div className={`font-semibold ${entry.rank <= 3 ? 'text-white' : 'text-slate-200'}`}>
+                                        {entry.username}
+                                    </div>
+                                    <div className="text-xs text-slate-500">{entry.attempts_count} games • {entry.best_wpm} WPM</div>
                                 </div>
                             </div>
 
                             <div className="text-right">
-                                <div className="font-bold text-primary">{entry.total_score}</div>
-                                <div className="text-xs text-green-400">+{entry.potential_reward || 0} coins</div>
+                                <div className={`text-lg font-bold ${entry.rank === 1 ? 'text-yellow-400' : entry.rank === 2 ? 'text-gray-400' : entry.rank === 3 ? 'text-amber-600' : 'text-primary'}`}>
+                                    {entry.total_score}
+                                </div>
+                                {entry.potential_reward > 0 && (
+                                    <div className="text-xs font-semibold text-green-400 flex items-center gap-1 justify-end">
+                                        <Zap size={12} className="fill-green-400" />
+                                        +{entry.potential_reward}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))

@@ -90,9 +90,14 @@ class TypingAttemptViewSet(viewsets.ModelViewSet):
                 season=season
             )
             
-            # Update user coins and last_wpm
+            # Update user coins, last_wpm, and max_wpm
             student.coins += coins_reward
             student.last_wpm = wpm
+            
+            # Update max_wpm if this is a new record
+            if wpm > student.max_wpm:
+                student.max_wpm = wpm
+            
             student.save()
             
             # Store for response

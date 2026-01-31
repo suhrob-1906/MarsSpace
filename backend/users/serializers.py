@@ -8,9 +8,9 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name', 
             'role', 'language', 'coins', 'points', 'activity_days',
             'has_premium', 'premium_expires_at', 'avatar_url', 
-            'last_activity_date', 'date_joined', 'last_wpm'
+            'last_activity_date', 'date_joined', 'last_wpm', 'max_wpm'
         ]
-        read_only_fields = ['coins', 'points', 'activity_days', 'has_premium', 'premium_expires_at', 'last_wpm']
+        read_only_fields = ['coins', 'points', 'activity_days', 'has_premium', 'premium_expires_at', 'last_wpm', 'max_wpm']
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
@@ -29,9 +29,9 @@ class AdminUserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name',
             'role', 'language', 'coins', 'points', 'activity_days',
             'has_premium', 'premium_expires_at', 'avatar_url',
-            'last_activity_date', 'date_joined', 'is_active', 'password', 'last_wpm'
+            'last_activity_date', 'date_joined', 'is_active', 'password', 'last_wpm', 'max_wpm'
         ]
-        read_only_fields = ['date_joined', 'last_wpm']
+        read_only_fields = ['date_joined', 'last_wpm', 'max_wpm']
     
     def create(self, validated_data):
         password = validated_data.pop('password', None)

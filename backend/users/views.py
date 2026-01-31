@@ -206,54 +206,61 @@ class TeacherStatsViewSet(viewsets.ViewSet):
         
         # Find next lesson
         now = timezone.now()
-        today = now.date()
         current_weekday = now.weekday()  # 0=Monday, 6=Sunday
         current_time = now.time()
         
         next_lesson = None
+        min_seconds_until = None
+        
         for group in groups.filter(is_active=True):
             if not group.days_of_week or not group.start_time:
                 continue
-                
-            # Parse days (e.g., "1,3,5" for Mon, Wed, Fri)
+            
+            # Handle both JSON array and comma-separated string formats
             try:
-                lesson_days = [int(d.strip()) for d in group.days_of_week.split(',')]
+                if isinstance(group.days_of_week, list):
+                    lesson_days = [int(d) for d in group.days_of_week]
+                else:
+                    lesson_days = [int(d.strip()) for d in str(group.days_of_week).split(',')]
             except:
                 continue
             
-            # Find next lesson day
-            for day in sorted(lesson_days):
-                # If lesson is today and hasn't started yet
-                if day == current_weekday and current_time < group.start_time:
-                    if not next_lesson or day < next_lesson['weekday']:
-                        next_lesson = {
-                            'group_name': group.name,
-                            'weekday': day,
-                            'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],
-                            'start_time': group.start_time.strftime('%H:%M'),
-                            'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
-                        }
-                # If lesson is in future days this week
-                elif day > current_weekday:
-                    if not next_lesson or day < next_lesson['weekday']:
-                        next_lesson = {
-                            'group_name': group.name,
-                            'weekday': day,
-                            'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],
-                            'start_time': group.start_time.strftime('%H:%M'),
-                            'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
-                        }
-            
-            # If no lesson found this week, check next week
-            if not next_lesson and lesson_days:
-                first_day = min(lesson_days)
-                next_lesson = {
-                    'group_name': group.name,
-                    'weekday': first_day,
-                    'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][first_day],
-                    'start_time': group.start_time.strftime('%H:%M'),
-                    'end_time': group.end_time.strftime('%H:%M') if group.end_time else None
-                }
+            # Find next lesson day for this group
+            for day in lesson_days:
+                # Calculate days until this lesson
+                days_until = (day - current_weekday) % 7
+                
+                # If lesson is today
+                if days_until == 0:
+                    # Check if it hasn't started yet
+                    if current_time < group.start_time:
+                        # Calculate seconds until lesson starts
+                        lesson_datetime = datetime.combine(now.date(), group.start_time)
+                        now_datetime = datetime.combine(now.date(), current_time)
+                        seconds_until = int((lesson_datetime - now_datetime).total_seconds())
+                    else:
+                        # Lesson already passed today, check next week
+                        seconds_until = days_until * 86400 + 7 * 86400
+                        seconds_until += int((datetime.combine(now.date(), group.start_time) - datetime.combine(now.date(), current_time)).total_seconds())
+                else:
+                    # Lesson is in future days
+                    seconds_until = days_until * 86400
+                    # Add time difference
+                    lesson_datetime = datetime.combine(now.date(), group.start_time)
+                    now_datetime = datetime.combine(now.date(), current_time)
+                    seconds_until += int((lesson_datetime - now_datetime).total_seconds())
+                
+                # Update next_lesson if this is sooner
+                if min_seconds_until is None or seconds_until < min_seconds_until:
+                    min_seconds_until = seconds_until
+                    next_lesson = {
+                        'group_name': group.name,
+                        'weekday': day,
+                        'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day],
+                        'start_time': group.start_time.strftime('%H:%M'),
+                        'end_time': group.end_time.strftime('%H:%M') if group.end_time else None,
+                        'seconds_until': seconds_until
+                    }
         
         return Response({
             'total_students': total_students,

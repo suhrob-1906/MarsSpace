@@ -45,7 +45,7 @@ const TypingGame = () => {
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
     const [coinsEarned, setCoinsEarned] = useState(0);
-    const [bestWpm, setBestWpm] = useState(user?.last_wpm || 0);
+    const [bestWpm, setBestWpm] = useState(user?.max_wpm || 0);
 
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
