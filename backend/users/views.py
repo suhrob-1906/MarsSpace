@@ -182,7 +182,8 @@ class AIChatView(APIView):
             # Configure and call Gemini
             try:
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # Fallback to stable 'gemini-pro' model as 'gemini-1.5-flash' was not found
+                model = genai.GenerativeModel('gemini-pro')
                 
                 context = f"""You are a helpful programming tutor for MarsSpace educational platform. 
 You help students learn programming concepts in a clear and friendly way.
