@@ -40,8 +40,29 @@ const TypingGame = () => {
     const [timeLeft, setTimeLeft] = useState(duration);
     const [gameStarted, setGameStarted] = useState(false);
     const [gameFinished, setGameFinished] = useState(false);
-    const [correctWords, setCorrectWords] = useState(0);
-    const [incorrectWords, setIncorrectWords] = useState(0);
+    // Stats Refs for Timer Closure access
+    const correctWordsRef = useRef(0);
+    const incorrectWordsRef = useRef(0);
+
+    // Internal State
+    const [correctWordsState, setCorrectWordsState] = useState(0);
+    const [incorrectWordsState, setIncorrectWordsState] = useState(0);
+
+    // Helpers
+    const setCorrectWords = (value) => {
+        const newValue = typeof value === 'function' ? value(correctWordsRef.current) : value;
+        correctWordsRef.current = newValue;
+        setCorrectWordsState(newValue);
+    };
+
+    const setIncorrectWords = (value) => {
+        const newValue = typeof value === 'function' ? value(incorrectWordsRef.current) : value;
+        incorrectWordsRef.current = newValue;
+        setIncorrectWordsState(newValue);
+    };
+
+    const correctWords = correctWordsState;
+    const incorrectWords = incorrectWordsState;
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
     const [coinsEarned, setCoinsEarned] = useState(0);
@@ -102,9 +123,13 @@ const TypingGame = () => {
         }
         setGameFinished(true);
 
-        const totalWords = correctWords + incorrectWords;
-        const calculatedWpm = Math.round((correctWords / duration) * 60);
-        const calculatedAccuracy = totalWords > 0 ? Math.round((correctWords / totalWords) * 100) : 100;
+        // Use Refs to get latest values inside closure
+        const currentCorrect = correctWordsRef.current;
+        const currentIncorrect = incorrectWordsRef.current;
+
+        const totalWords = currentCorrect + currentIncorrect;
+        const calculatedWpm = Math.round((currentCorrect / duration) * 60);
+        const calculatedAccuracy = totalWords > 0 ? Math.round((currentCorrect / totalWords) * 100) : 100;
 
         setWpm(calculatedWpm);
         setAccuracy(calculatedAccuracy);
