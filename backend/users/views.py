@@ -200,7 +200,7 @@ Student question: {message}"""
             except Exception as gen_error:
                 print(f"Gemini API Error: {gen_error}")
                 return Response(
-                    {'error': 'AI could not generate a response at this time.'},
+                    {'error': f'AI Error: {str(gen_error)}'},
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
             
@@ -210,7 +210,7 @@ Student question: {message}"""
             traceback.print_exc()
             print(f"AI Chat Internal Error: {str(e)}")
             return Response(
-                {'error': 'AI service encountered an internal error.'},
+                {'error': f'Internal AI Error: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

@@ -103,18 +103,27 @@ class HomeworkSubmissionViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to handle re-submissions (update instead of error)"""
         try:
+            # Handle both JSON and Multipart
             homework_id = request.data.get('homework')
+            
             if homework_id:
+                # Check for existing submission for this homework + user
                 existing = HomeworkSubmission.objects.filter(homework_id=homework_id, student=request.user).first()
+                
                 if existing:
                     # Update existing submission
+                    # partial=True is important here
                     serializer = self.get_serializer(existing, data=request.data, partial=True)
                     serializer.is_valid(raise_exception=True)
                     self.perform_update(serializer)
                     return Response(serializer.data)
-        except Exception:
-            pass # Fallback to normal create which will trigger validation errors if needed
+                    
+        except Exception as e:
+            print(f"Error in custom create: {e}")
+            # If our custom logic fails, we try standard creation
+            pass 
             
+        # Standard creation (will hit UniqueValidator if duplicate still exists)
         return super().create(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
